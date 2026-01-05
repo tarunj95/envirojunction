@@ -1,3 +1,70 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "news-1",
+      "description": "A wind farm at sunset",
+      "imageUrl": "https://images.unsplash.com/photo-1615209853186-e4bd66602508?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx3aW5kJTIwdHVyYmluZXxlbnwwfHx8fDE3Njc1MTk3ODd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "wind turbine"
+    },
+    {
+      "id": "news-2",
+      "description": "Solar panels on a roof",
+      "imageUrl": "https://images.unsplash.com/photo-1624397640148-949b1732bb0a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxzb2xhciUyMHBhbmVsc3xlbnwwfHx8fDE3Njc1NjkyMzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "solar panels"
+    },
+    {
+      "id": "news-3",
+      "description": "A person planting a tree",
+      "imageUrl": "https://images.unsplash.com/photo-1598335624134-5bceb5de202d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwbGFudGluZyUyMHRyZWV8ZW58MHx8fHwxNzY3NTk2MDU2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "planting tree"
+    },
+    {
+      "id": "company-logo-1",
+      "description": "Logo for GreenTech Solutions",
+      "imageUrl": "https://images.unsplash.com/photo-1622465911368-72162f8da3e2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxjb21wYW55JTIwbG9nb3xlbnwwfHx8fDE3Njc1Mjk4Njd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "company logo"
+    },
+    {
+      "id": "company-logo-2",
+      "description": "Logo for EcoWaste Innovators",
+      "imageUrl": "https://images.unsplash.com/photo-1562783912-21ad31ee2a83?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjb21wYW55JTIwbG9nb3xlbnwwfHx8fDE3Njc1Mjk4Njd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "company logo"
+    },
+    {
+      "id": "company-logo-3",
+      "description": "Logo for Sustainable Designs Co.",
+      "imageUrl": "https://images.unsplash.com/photo-1496200186974-4293800e2c20?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjb21wYW55JTIwbG9nb3xlbnwwfHx8fDE3Njc1Mjk4Njd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "company logo"
+    },
+    {
+      "id": "professional-1",
+      "description": "Portrait of a professional",
+      "imageUrl": "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3Njc1MTExMDd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "professional-2",
+      "description": "Portrait of another professional",
+      "imageUrl": "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3Njc1MTExMDd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "professional-3",
+      "description": "Portrait of a third professional",
+      "imageUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3Njc1MTExMDd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "profile-hero",
+      "description": "Lush green forest",
+      "imageUrl": "https://images.unsplash.com/photo-1655473479605-e599fe7fcb8c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Z3JlZW4lMjBmb3Jlc3R8ZW58MHx8fHwxNzY3NTQzNDgzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "green forest"
+    },
+    {
+      "id": "user-avatar",
+      "description": "Avatar for the current user",
+      "imageUrl": "https://images.unsplash.com/photo-1710974481447-fb001ad9ad5a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwZXJzb24lMjBmYWNlfGVufDB8fHx8MTc2NzU2NjEzM3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person face"
+    }
+  ]
 }

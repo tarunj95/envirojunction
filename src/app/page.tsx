@@ -1,3 +1,97 @@
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { ArrowRight, Newspaper, Briefcase, FileText } from "lucide-react";
+import { newsArticles, jobs, tenders } from "@/lib/data";
+import { NewsCard } from "./news/components/news-card";
+import { JobCard } from "./jobs/components/job-card";
+import { TenderCard } from "./tenders/components/tender-card";
+
 export default function Home() {
-  return <></>;
+  return (
+    <div className="container mx-auto space-y-8">
+      <header className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight text-primary md:text-4xl font-headline">
+          Welcome to EnviroConnect
+        </h1>
+        <p className="text-lg text-muted-foreground">
+          Your central hub for environmental news, careers, and opportunities.
+        </p>
+      </header>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="flex flex-col">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 font-headline">
+              <Newspaper className="text-accent" />
+              Latest News
+            </CardTitle>
+            <CardDescription>
+              Top stories from the environmental sector.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-grow">
+            <NewsCard article={newsArticles[0]} />
+          </CardContent>
+          <div className="p-6 pt-0">
+            <Button asChild className="w-full">
+              <Link href="/news">
+                View All News <ArrowRight className="ml-2" />
+              </Link>
+            </Button>
+          </div>
+        </Card>
+
+        <Card className="flex flex-col">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 font-headline">
+              <Briefcase className="text-accent" />
+              Featured Job
+            </CardTitle>
+            <CardDescription>
+              Explore career opportunities in the green industry.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-grow">
+            <JobCard job={jobs[0]} />
+          </CardContent>
+          <div className="p-6 pt-0">
+            <Button asChild className="w-full">
+              <Link href="/jobs">
+                Browse All Jobs <ArrowRight className="ml-2" />
+              </Link>
+            </Button>
+          </div>
+        </Card>
+
+        <Card className="flex flex-col">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 font-headline">
+              <FileText className="text-accent" />
+              Recent Tender
+            </CardTitle>
+            <CardDescription>
+              Find new projects and collaborations.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-grow">
+            <TenderCard tender={tenders[0]} />
+          </CardContent>
+          <div className="p-6 pt-0">
+            <Button asChild className="w-full">
+              <Link href="/tenders">
+                See All Tenders <ArrowRight className="ml-2" />
+              </Link>
+            </Button>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
 }
