@@ -1,13 +1,8 @@
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { ArrowRight, Newspaper, Briefcase, FileText } from "lucide-react";
 import { jobs, tenders, newsArticles, freelanceProjects } from "@/lib/data";
 import { JobCard } from "./jobs/components/job-card";
 import { TenderCard } from "./tenders/components/tender-card";
@@ -15,6 +10,10 @@ import { ProfileOverviewCard } from "./components/profile-overview-card";
 import { NewsCard } from "./news/components/news-card";
 import { FreelanceCard } from "./freelance/components/freelance-card";
 import { RightSidebar } from "./components/right-sidebar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Video, Image as ImageIcon, FileText, Forward } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 export default function Home() {
   const feedItems = [
@@ -33,7 +32,35 @@ export default function Home() {
         </div>
 
         <div className="space-y-4">
-           <Card>
+            <Card>
+                <CardContent className="p-4">
+                    <div className="flex gap-3">
+                        <Avatar>
+                            <AvatarImage src="https://picsum.photos/seed/user/100/100" data-ai-hint="person face" />
+                            <AvatarFallback>U</AvatarFallback>
+                        </Avatar>
+                        <Input placeholder="Start a post" className="flex-grow rounded-full h-12 bg-secondary/50 border-border hover:bg-muted" />
+                    </div>
+                    <div className="flex justify-around mt-4">
+                        <Button variant="ghost" className="text-muted-foreground">
+                            <Video className="w-5 h-5 text-blue-500" /> <span className="ml-2">Video</span>
+                        </Button>
+                        <Button variant="ghost" className="text-muted-foreground">
+                            <ImageIcon className="w-5 h-5 text-green-500" /> <span className="ml-2">Photo</span>
+                        </Button>
+                        <Button variant="ghost" className="text-muted-foreground">
+                            <FileText className="w-5 h-5 text-orange-500" /> <span className="ml-2">Write article</span>
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <div className="flex items-center gap-2">
+                <Separator className="flex-grow" />
+                <span className="text-xs text-muted-foreground">Sort by: Top</span>
+            </div>
+
+           <Card className="p-0 shadow-none border-none bg-transparent">
             <CardContent className="space-y-4 p-0">
               {feedItems.map((item, index) => {
                 if (item.type === 'job') {
