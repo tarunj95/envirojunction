@@ -8,36 +8,16 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight, Newspaper, Briefcase, FileText } from "lucide-react";
-import { newsArticles, jobs, tenders } from "@/lib/data";
-import { NewsCard } from "./news/components/news-card";
+import { jobs, tenders } from "@/lib/data";
 import { JobCard } from "./jobs/components/job-card";
 import { TenderCard } from "./tenders/components/tender-card";
+import { ProfileOverviewCard } from "./components/profile-overview-card";
 
 export default function Home() {
   return (
     <div className="container mx-auto space-y-8 pt-8">
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="flex flex-col">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-headline">
-              <Newspaper className="text-accent" />
-              Latest News
-            </CardTitle>
-            <CardDescription>
-              Top stories from the environmental sector.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex-grow">
-            <NewsCard article={newsArticles[0]} />
-          </CardContent>
-          <div className="p-6 pt-0">
-            <Button asChild className="w-full">
-              <Link href="/news">
-                View All News <ArrowRight className="ml-2" />
-              </Link>
-            </Button>
-          </div>
-        </Card>
+        <ProfileOverviewCard />
 
         <Card className="flex flex-col">
           <CardHeader>
