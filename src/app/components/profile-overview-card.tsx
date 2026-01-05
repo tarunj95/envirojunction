@@ -11,12 +11,6 @@ export function ProfileOverviewCard() {
         <Card className="overflow-hidden text-center">
             <div className="relative h-16 w-full">
                 <Image src="https://picsum.photos/seed/p-banner/300/80" alt="profile banner" layout="fill" objectFit="cover" />
-                <div className="absolute inset-0 bg-blue-900/50 flex items-center justify-end px-4">
-                    <div className="text-right text-white">
-                        <p className="font-bold text-sm">Premium</p>
-                        <p className="text-xs">Make your world a better place</p>
-                    </div>
-                </div>
             </div>
             <CardContent className="p-4 pt-0">
             <Avatar className="h-20 w-20 mx-auto -mt-10 mb-2 border-4 border-card">
@@ -46,15 +40,6 @@ export function ProfileOverviewCard() {
                     <span>Post impressions</span>
                     <span className="text-primary font-semibold">41</span>
                 </div>
-            </div>
-            <Separator />
-            <div className="p-2 text-left">
-                <a href="#" className="flex items-center gap-2 p-2 rounded hover:bg-secondary">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-yellow-400">
-                    <path d="M12.923 2.053H3.077a.923.923 0 0 0-.923.923v10a.923.923 0 0 0 .923.923h9.846a.923.923 0 0 0 .923-.923V2.976a.923.923 0 0 0-.923-.923Z"></path>
-                </svg>
-                <span className="text-xs font-semibold">Your Premium features</span>
-                </a>
             </div>
         </Card>
         <Card>
