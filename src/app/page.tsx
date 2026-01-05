@@ -34,12 +34,6 @@ export default function Home() {
 
         <div className="space-y-4">
            <Card>
-            <CardHeader>
-              <CardTitle className="font-headline">Activity Feed</CardTitle>
-              <CardDescription>
-                The latest jobs, news, and opportunities.
-              </CardDescription>
-            </CardHeader>
             <CardContent className="space-y-4 p-0">
               {feedItems.map((item, index) => {
                 if (item.type === 'job') {
