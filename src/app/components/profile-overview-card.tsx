@@ -18,9 +18,6 @@ export function ProfileOverviewCard() {
         </Avatar>
         <CardTitle className="text-lg font-semibold flex items-center justify-center gap-1">
             <span>Tarun Jajoria</span>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-primary">
-            <path d="M13.635 13.635H11.08V9.86c0-.899-.018-2.055-1.252-2.055-1.252 0-1.446.978-1.446 1.989v3.841H5.83V6.26h2.44v1.118h.036a2.671 2.671 0 0 1 2.404-1.25c2.572 0 3.048 1.693 3.048 3.896v3.61Z M3.593 5.143a1.543 1.543 0 1 1 0-3.086 1.543 1.543 0 0 1 0 3.086ZM2.365 13.635h2.46V6.26h-2.46v7.375Z M14.885 2.365a2.365 2.365 0 0 0-2.365-2.365H3.48a2.365 2.365 0 0 0-2.365 2.365v11.27a2.365 2.365 0 0 0 2.365 2.365h11.405a2.365 2.365 0 0 0 2.365-2.365V2.365Z"></path>
-            </svg>
         </CardTitle>
         <CardDescription className="text-xs text-muted-foreground">
             AI Engineer | Built AI RegTech Dashboard 40% Faster | Scalabl...
