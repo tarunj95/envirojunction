@@ -15,16 +15,7 @@ import { TenderCard } from "./tenders/components/tender-card";
 
 export default function Home() {
   return (
-    <div className="container mx-auto space-y-8">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-primary md:text-4xl font-headline">
-          Welcome to EnviroConnect
-        </h1>
-        <p className="text-lg text-muted-foreground">
-          Your central hub for environmental news, careers, and opportunities.
-        </p>
-      </header>
-
+    <div className="container mx-auto space-y-8 pt-8">
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card className="flex flex-col">
           <CardHeader>
