@@ -42,19 +42,24 @@ export function Header() {
           </h1>
         </Link>
       <nav className="hidden md:flex items-center gap-2 text-sm font-medium">
-        {navItems.map((item) => (
-            <Link 
-              href={item.href}
-              key={item.href}
-              className={cn(
-                "px-3 py-2 rounded-md transition-colors", 
-                (pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/")) 
-                ? "bg-primary/10 text-primary font-semibold"
-                : "text-muted-foreground hover:text-foreground"
-              )}>
-              {item.label}
-            </Link>
-        ))}
+        {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                href={item.href}
+                key={item.href}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 rounded-md transition-colors",
+                  (pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/"))
+                  ? "bg-primary/10 text-primary font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                {item.label}
+              </Link>
+            );
+        })}
       </nav>
       <div className="flex items-center gap-4 ml-auto">
         <div className="relative flex-1 md:grow-0">
