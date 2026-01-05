@@ -40,7 +40,7 @@ export default function Home() {
                 The latest jobs, news, and opportunities.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 max-h-[80vh] overflow-y-auto">
+            <CardContent className="space-y-4 p-0">
               {feedItems.map((item, index) => {
                 if (item.type === 'job') {
                   return <JobCard key={`job-${index}`} job={item.data as any} />;
