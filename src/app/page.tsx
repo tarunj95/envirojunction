@@ -14,6 +14,7 @@ import { TenderCard } from "./tenders/components/tender-card";
 import { ProfileOverviewCard } from "./components/profile-overview-card";
 import { NewsCard } from "./news/components/news-card";
 import { FreelanceCard } from "./freelance/components/freelance-card";
+import { RightSidebar } from "./components/right-sidebar";
 
 export default function Home() {
   const feedItems = [
@@ -26,7 +27,7 @@ export default function Home() {
 
   return (
     <div className="container mx-auto space-y-8 pt-8">
-      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-[250px_1fr]">
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-[250px_1fr_320px]">
         <div className="hidden lg:block">
           <ProfileOverviewCard />
         </div>
@@ -57,6 +58,10 @@ export default function Home() {
               })}
             </CardContent>
           </Card>
+        </div>
+
+        <div className="hidden lg:block">
+          <RightSidebar />
         </div>
       </div>
     </div>
