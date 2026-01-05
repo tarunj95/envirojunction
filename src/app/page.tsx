@@ -57,7 +57,7 @@ export default function Home() {
 
             <div className="flex items-center gap-2">
                 <Separator className="flex-grow" />
-                <span className="text-xs text-muted-foreground">Sort by: Top</span>
+                <span className="text-xs text-muted-foreground whitespace-nowrap">Sort by: Top</span>
             </div>
 
            <Card className="p-0 shadow-none border-none bg-transparent">
