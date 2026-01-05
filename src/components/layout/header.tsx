@@ -13,66 +13,79 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search } from "lucide-react";
+import { Search, Leaf, LayoutDashboard, Newspaper, Briefcase, FileText, Lightbulb, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/news", label: "News" },
-  { href: "/jobs", label: "Jobs" },
-  { href: "/tenders", label: "Tenders" },
-  { href: "/freelance", label: "Freelance" },
-  { href: "/professionals", label: "Professionals" },
-  { href: "/profile", label: "My Profile" },
-  { href: "/", label: "Dashboard" },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/news", label: "News", icon: Newspaper },
+  { href: "/jobs", label: "Jobs", icon: Briefcase },
+  { href: "/tenders", label: "Tenders", icon: FileText },
+  { href: "/freelance", label: "Freelance", icon: Lightbulb },
+  { href: "/professionals", label: "Professionals", icon: Users },
 ];
 
-function getPageTitle(pathname: string): string {
-  if (pathname === '/') return 'Dashboard';
-  const item = navItems.find(nav => pathname.startsWith(nav.href) && nav.href !== '/');
-  return item ? item.label : "EnviroConnect";
-}
 
 export function Header() {
   const pathname = usePathname();
-  const title = getPageTitle(pathname);
   const userAvatar = PlaceHolderImages.find(img => img.id === 'user-avatar');
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
-      <SidebarTrigger className="md:hidden" />
-      <div className="flex-1">
-        <h1 className="text-lg font-semibold md:text-xl font-headline">{title}</h1>
+      <Link href="/" className="flex items-center gap-2 mr-4">
+          <Leaf className="h-8 w-8 text-primary" />
+          <h1 className="text-xl font-bold text-primary font-headline hidden md:block">
+            EnviroConnect
+          </h1>
+        </Link>
+      <nav className="hidden md:flex items-center gap-2 text-sm font-medium">
+        {navItems.map((item) => (
+            <Link 
+              href={item.href}
+              key={item.href}
+              className={cn(
+                "px-3 py-2 rounded-md transition-colors", 
+                (pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/")) 
+                ? "bg-primary/10 text-primary font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+              )}>
+              {item.label}
+            </Link>
+        ))}
+      </nav>
+      <div className="flex items-center gap-4 ml-auto">
+        <div className="relative flex-1 md:grow-0">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search..."
+            className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
+          />
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+              <Avatar className="h-9 w-9">
+                {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="User avatar" data-ai-hint={userAvatar.imageHint} />}
+                <AvatarFallback>U</AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/profile">Profile</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Log out</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-      <div className="relative flex-1 md:grow-0">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          type="search"
-          placeholder="Search..."
-          className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
-        />
-      </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-            <Avatar className="h-9 w-9">
-              {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="User avatar" data-ai-hint={userAvatar.imageHint} />}
-              <AvatarFallback>U</AvatarFallback>
-            </Avatar>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link href="/profile">Profile</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem>Settings</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>Log out</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
     </header>
   );
 }
