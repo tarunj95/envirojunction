@@ -26,12 +26,12 @@ export default function Home() {
 
   return (
     <div className="container mx-auto space-y-8 pt-8">
-      <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-[250px_1fr_300px]">
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-[250px_1fr]">
         <div className="hidden lg:block">
           <ProfileOverviewCard />
         </div>
 
-        <div className="space-y-4 md:col-span-2 lg:col-span-1">
+        <div className="space-y-4">
            <Card>
             <CardHeader>
               <CardTitle className="font-headline">Activity Feed</CardTitle>
@@ -56,30 +56,6 @@ export default function Home() {
                 return null;
               })}
             </CardContent>
-          </Card>
-        </div>
-
-        <div className="hidden md:block">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 font-headline">
-                <FileText className="text-accent" />
-                Recent Tender
-              </CardTitle>
-              <CardDescription>
-                Find new projects and collaborations.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex-grow">
-              <TenderCard tender={tenders[0]} />
-            </CardContent>
-            <div className="p-6 pt-0">
-              <Button asChild className="w-full">
-                <Link href="/tenders">
-                  See All Tenders <ArrowRight className="ml-2" />
-                </Link>
-              </Button>
-            </div>
           </Card>
         </div>
       </div>
