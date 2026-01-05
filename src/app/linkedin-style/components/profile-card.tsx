@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Bookmark, Users, Newspaper, Calendar } from "lucide-react";
@@ -16,7 +16,12 @@ export function ProfileCard() {
             <AvatarImage src="https://picsum.photos/seed/avatar1/100/100" />
             <AvatarFallback>TJ</AvatarFallback>
           </Avatar>
-          <CardTitle className="text-lg font-semibold">Tarun Jajoria</CardTitle>
+          <CardTitle className="text-lg font-semibold flex items-center justify-center gap-1">
+            <span>Tarun Jajoria</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-primary">
+              <path d="M13.635 13.635H11.08V9.86c0-.899-.018-2.055-1.252-2.055-1.252 0-1.446.978-1.446 1.989v3.841H5.83V6.26h2.44v1.118h.036a2.671 2.671 0 0 1 2.404-1.25c2.572 0 3.048 1.693 3.048 3.896v3.61Z M3.593 5.143a1.543 1.543 0 1 1 0-3.086 1.543 1.543 0 0 1 0 3.086ZM2.365 13.635h2.46V6.26h-2.46v7.375Z M14.885 2.365a2.365 2.365 0 0 0-2.365-2.365H3.48a2.365 2.365 0 0 0-2.365 2.365v11.27a2.365 2.365 0 0 0 2.365 2.365h11.405a2.365 2.365 0 0 0 2.365-2.365V2.365Z"></path>
+            </svg>
+          </CardTitle>
           <CardDescription className="text-xs text-muted-foreground">
             AI Engineer | Built AI RegTech Dashboard 40% Faster | Scalabi...
           </CardDescription>
@@ -33,8 +38,13 @@ export function ProfileCard() {
             </div>
         </div>
         <Separator />
-        <div className="p-4 text-left">
-            <p className="text-xs text-muted-foreground">Your Premium features</p>
+        <div className="p-2 text-left">
+            <a href="#" className="flex items-center gap-2 p-2 rounded hover:bg-secondary">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-yellow-400">
+                  <path d="M12.923 2.053H3.077a.923.923 0 0 0-.923.923v10a.923.923 0 0 0 .923.923h9.846a.923.923 0 0 0 .923-.923V2.976a.923.923 0 0 0-.923-.923Z"></path>
+              </svg>
+              <span className="text-xs font-semibold">Your Premium features</span>
+            </a>
         </div>
       </Card>
       <Card>
