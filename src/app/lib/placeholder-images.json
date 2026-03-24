@@ -1,0 +1,17 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "enviro-logo",
+      "description": "Envirojunction official brand logo",
+      "imageUrl": "https://6000-firebase-studio-1772522538585.cluster-64pjnskmlbaxowh5lzq6i7v4ra.cloudworkstations.dev/api/vision-proxy?path=images%2F624f2b96-f6d1-4191-be70-d883f360980c.png",
+      "imageHint": "environmental logo"
+    },
+    {
+      "id": "hero-image",
+      "description": "Lush green forest with sunlight filtering through trees",
+      "imageUrl": "https://picsum.photos/seed/nature-hero/1200/800",
+      "imageHint": "green forest"
+    }
+  ]
+}

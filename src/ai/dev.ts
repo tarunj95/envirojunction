@@ -1,4 +1,4 @@
 import { config } from 'dotenv';
 config();
 
-import '@/ai/flows/tender-relevance-classification.ts';
+import '@/ai/flows/ai-fitness-tip-generator.ts';

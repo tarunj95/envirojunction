@@ -1,90 +1,93 @@
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { jobs, tenders, newsArticles, freelanceProjects } from "@/lib/data";
-import { JobCard } from "./jobs/components/job-card";
-import { TenderCard } from "./tenders/components/tender-card";
-import { ProfileOverviewCard } from "./components/profile-overview-card";
-import { NewsCard } from "./news/components/news-card";
-import { FreelanceCard } from "./freelance/components/freelance-card";
-import { RightSidebar } from "./components/right-sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
-import { Video, Image as ImageIcon, FileText, Forward } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 
+'use client';
+
+import React, { useState } from 'react';
+import Image from 'next/image'; // Import the Image component
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { saveLead } from '@/app/actions';
+import { Loader2, Mail } from 'lucide-react';
+import LogoImg from '../../public/EJ LOGO FINAL.png'
 export default function Home() {
-  const feedItems = [
-    ...jobs.map((item) => ({ type: "job", date: new Date(item.postedDate), data: item })),
-    ...newsArticles.map((item) => ({ type: "news", date: new Date(item.publishedDate), data: item })),
-    // Tenders and freelance don't have post dates, so we'll use deadline for now.
-    ...tenders.map((item) => ({ type: "tender", date: new Date(), data: item })),
-    ...freelanceProjects.map((item) => ({ type: "freelance", date: new Date(), data: item })),
-  ].sort((a, b) => b.date.getTime() - a.date.getTime());
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    const formData = new FormData(e.currentTarget);
+    const result = await saveLead(formData);
+
+    if (result.success) {
+      toast({
+        title: "You're on the list!",
+        description: "We'll notify you as soon as Envirojunction launches.",
+      });
+      (e.target as HTMLFormElement).reset();
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Oops!",
+        description: result.error || "Please try again later.",
+      });
+    }
+    
+    setIsSubmitting(false);
+  }
 
   return (
-    <div className="container mx-auto space-y-8 pt-8">
-      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-[250px_1fr_320px]">
-        <div className="hidden lg:block">
-          <ProfileOverviewCard />
+    <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <div className="max-w-md w-full space-y-8">
+        <div className="flex flex-col items-center space-y-6">
+          {/* Logo Image */}
+          <Image
+            src={LogoImg}
+            alt="Envirojunction Logo"
+            width={300}
+            height={300}
+          />
+          <h1 className="text-4xl font-bold tracking-tight">Coming Soon</h1>
         </div>
+        
+        <p className="text-muted-foreground text-lg">
+          We're building a new way to connect communities with environmental action. 
+          Join the waitlist to get early access.
+        </p>
 
-        <div className="space-y-4">
-            <Card>
-                <CardContent className="p-4">
-                    <div className="flex gap-3">
-                        <Avatar>
-                            <AvatarImage src="https://picsum.photos/seed/user/100/100" data-ai-hint="person face" />
-                            <AvatarFallback>U</AvatarFallback>
-                        </Avatar>
-                        <Input placeholder="Start a post" className="flex-grow rounded-full h-12 bg-secondary/50 border-border hover:bg-muted" />
-                    </div>
-                    <div className="flex justify-around mt-4">
-                        <Button variant="ghost" className="text-muted-foreground">
-                            <Video className="w-5 h-5 text-blue-500" /> <span className="ml-2">Video</span>
-                        </Button>
-                        <Button variant="ghost" className="text-muted-foreground">
-                            <ImageIcon className="w-5 h-5 text-green-500" /> <span className="ml-2">Photo</span>
-                        </Button>
-                        <Button variant="ghost" className="text-muted-foreground">
-                            <FileText className="w-5 h-5 text-orange-500" /> <span className="ml-2">Write article</span>
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input 
+              type="email" 
+              name="email"
+              placeholder="Enter your email" 
+              className="pl-10 h-12 bg-white/50 border-primary/20 focus:border-primary"
+              required
+            />
+          </div>
+          <Button 
+            type="submit" 
+            className="w-full h-12 text-lg font-bold bg-primary hover:bg-primary/90 transition-all"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : 'Join Waiting List'}
+          </Button>
+        </form>
 
-            <div className="flex items-center gap-2">
-                <Separator className="flex-grow" />
-                <span className="text-xs text-muted-foreground whitespace-nowrap">Sort by: Top</span>
-            </div>
-
-           <Card className="p-0 shadow-none border-none bg-transparent">
-            <CardContent className="space-y-4 p-0">
-              {feedItems.map((item, index) => {
-                if (item.type === 'job') {
-                  return <JobCard key={`job-${index}`} job={item.data as any} />;
-                }
-                if (item.type === 'news') {
-                  return <NewsCard key={`news-${index}`} article={item.data as any} />;
-                }
-                if (item.type === 'tender') {
-                  return <TenderCard key={`tender-${index}`} tender={item.data as any} />;
-                }
-                if (item.type === 'freelance') {
-                  return <FreelanceCard key={`freelance-${index}`} project={item.data as any} />;
-                }
-                return null;
-              })}
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="hidden lg:block">
-          <RightSidebar />
-        </div>
+        <p className="text-xs text-muted-foreground pt-4">
+          © 2026 Envirojunction. Sustainable communities start here.
+        </p>
       </div>
-    </div>
+
+      {/* Decorative background blur */}
+      <div className="fixed top-0 left-0 w-full h-full -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/5 blur-[120px] rounded-full" />
+      </div>
+    </main>
   );
 }
