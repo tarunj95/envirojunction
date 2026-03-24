@@ -20,7 +20,6 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/news", label: "News", icon: Newspaper },
   { href: "/jobs", label: "Jobs", icon: Briefcase },
   { href: "/tenders", label: "Tenders", icon: FileText },
@@ -36,29 +35,26 @@ export function Header() {
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
       <Link href="/" className="flex items-center gap-2 mr-4">
-          <Leaf className="h-8 w-8 text-primary" />
-          <h1 className="text-xl font-bold text-primary font-headline hidden md:block">
-            EnviroConnect
-          </h1>
-        </Link>
+        <img src="/logo.png" alt="EnviroJunction Logo" className="h-14 w-auto" />
+      </Link>
       <nav className="hidden md:flex items-center gap-2 text-sm font-medium">
         {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                href={item.href}
-                key={item.href}
-                className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-md transition-colors",
-                  (pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/"))
+          const Icon = item.icon;
+          return (
+            <Link
+              href={item.href}
+              key={item.href}
+              className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-md transition-colors",
+                (pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/"))
                   ? "bg-primary/10 text-primary font-semibold"
                   : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            );
+              )}
+            >
+              <Icon className="h-4 w-4" />
+              {item.label}
+            </Link>
+          );
         })}
       </nav>
       <div className="flex items-center gap-4 ml-auto">
