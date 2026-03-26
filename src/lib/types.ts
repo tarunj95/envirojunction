@@ -54,6 +54,8 @@ export type UserProfile = {
   name: string;
   headline: string;
   location: string;
+  followers: string;
+  employees: string;
   skills: string[];
   avatarUrl: string;
   avatarHint: string;
@@ -62,11 +64,42 @@ export type UserProfile = {
     title: string;
     company: string;
     period: string;
+    duration: string;
+    location: string;
     description: string;
+    logoColor: string;
   }[];
   education: {
     institution: string;
     degree: string;
     period: string;
+  }[];
+  posts: {
+    id: string;
+    authorName: string;
+    authorAvatar: string;
+    followers: string;
+    time: string;
+    content: string;
+    imageUrl: string;
+  }[];
+  viewedPages: {
+    id: string;
+    name: string;
+    logo: string;
+    industry: string;
+    followers: string;
+  }[];
+  peopleKnown: {
+    id: string;
+    name: string;
+    avatar: string;
+    info: string;
+  }[];
+  recommendations: {
+    id: string;
+    title: string;
+    views: string;
+    thumbnail: string;
   }[];
 };
