@@ -148,12 +148,12 @@ export const freelanceProjects: FreelanceProject[] = [
 ];
 
 export const currentUser: UserProfile = {
-  name: 'Tejinder Singh',
+  name: 'Tarun Jajoria',
   headline: 'Ticktech',
   location: 'Via Camilla Cavour, Florence (FI), Tuscany, Italy',
   followers: '10k',
   employees: '200-500',
-  avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop',
+  avatarUrl: 'https://images.pexels.com/photos/2927773/pexels-photo-2927773.jpeg',
   avatarHint: 'person portrait',
   about: "Our goal is simple - making our customers' financial portfolios look good while providing optimal services. Check out our Linkedin to learn so much more about us!",
   skills: ['Lorem ipsum dolor sit', 'Lorem ipsum dolor sit', 'Lorem ipsum dolor sit'],
