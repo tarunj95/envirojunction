@@ -9,7 +9,7 @@ export function ProfileCard() {
     <aside className="sticky top-20 space-y-4">
       <Card className="overflow-hidden text-center">
         <div className="relative h-16 w-full">
-            <Image src="https://picsum.photos/seed/p-banner/300/80" alt="profile banner" layout="fill" objectFit="cover" />
+            <Image src="https://picsum.photos/seed/p-banner/300/80" alt="profile banner" fill className="object-cover" />
         </div>
         <CardContent className="p-4 pt-0">
           <Avatar className="h-20 w-20 mx-auto -mt-10 mb-2 border-4 border-card">

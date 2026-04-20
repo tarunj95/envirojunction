@@ -42,7 +42,7 @@ export function PostCard({ post }: { post: Post }) {
             <p className="text-sm whitespace-pre-wrap">{post.content}</p>
             {post.imageUrl && (
                  <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-border">
-                    <Image src={post.imageUrl} alt={post.imageHint || "Post image"} layout="fill" objectFit="cover" data-ai-hint={post.imageHint} />
+                    <Image src={post.imageUrl} alt={post.imageHint || "Post image"} fill className="object-cover" data-ai-hint={post.imageHint} />
                 </div>
             )}
         </CardContent>
