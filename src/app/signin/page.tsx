@@ -38,7 +38,7 @@ import { handleSocialLogin } from "@/utils/auth";
 
 export default function SigninPage() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
 
   const validationSchema = Yup.object({
     email: Yup.string()
@@ -150,7 +150,7 @@ export default function SigninPage() {
       {/* Mobile/Tablet Block Overlay */}
       <Box
         sx={{
-          display: { xs: 'flex', md: 'none' },
+          display: { xs: 'flex', lg: 'none' },
           position: 'fixed',
           top: 0,
           left: 0,
@@ -166,21 +166,6 @@ export default function SigninPage() {
           background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)'
         }}
       >
-        <Box
-          sx={{
-            width: 80,
-            height: 80,
-            bgcolor: '#1e6b52',
-            borderRadius: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            mb: 3,
-            boxShadow: '0 10px 20px rgba(30, 107, 82, 0.2)'
-          }}
-        >
-          <img src="/logo.png" alt="Logo" style={{ width: '40px', filter: 'brightness(0) invert(1)' }} />
-        </Box>
         <Typography
           variant="h5"
           sx={{
@@ -214,7 +199,7 @@ export default function SigninPage() {
         {/* Left Section - Carousel & Background */}
         <Box
           sx={{
-            display: { xs: 'none', md: 'flex' },
+            display: { xs: 'none', lg: 'flex' },
             flex: 790,
             position: 'relative',
             flexDirection: 'column',
@@ -349,12 +334,12 @@ export default function SigninPage() {
           elevation={10}
           sx={{
             position: 'absolute',
-            left: { xs: '50%', md: '72%' },
-            top: { xs: '50%', md: '50%' },
+            left: { xs: '50%', lg: '72%' },
+            top: { xs: '50%', lg: '50%' },
             transform: 'translate(-50%, -50%)',
-            width: { xs: '90%', md: '540px' },
-            height: { xs: 'auto', md: 'auto' },
-            p: { xs: 4, md: 6 },
+            width: { xs: '90%', lg: '540px' },
+            height: { xs: 'auto', lg: 'auto' },
+            p: { xs: 4, lg: 6 },
             borderRadius: '40px',
             zIndex: 2,
             boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
