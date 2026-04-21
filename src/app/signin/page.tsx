@@ -104,15 +104,15 @@ export default function SigninPage() {
   const slides = [
     {
       title: "Global Environmental Tenders at Your Fingertips",
-      description: "Access a curated database of high-impact green projects and bidding opportunities across the globe."
+      description: "Access a curated database of high-impact green projects and bidding opportunities across Pan India."
     },
     {
-      title: "Sustainable Solutions for a Greener Future",
-      description: "Join our community of innovators working towards global environmental impact."
+      title: "Stay Informed on Critical Climate Insights",
+      description: "Get real-time updates on wildlife conservation, global warming reports, and national policy changes."
     },
     {
-      title: "Real-time Insights and Opportunities",
-      description: "Stay ahead with the latest industry trends and bidding opportunities worldwide."
+      title: "Empower Your Career in Sustainability",
+      description: "Connect with top-tier organizations and explore thousands of expert vacancies in the environmental sector."
     }
   ];
 
@@ -256,10 +256,33 @@ export default function SigninPage() {
                 <Box sx={{ display: 'flex' }}>
                   {slides.map((slide, index) => (
                     <Box key={index} sx={{ flex: '0 0 100%', minWidth: 0 }}>
-                      <Typography variant="h3" sx={{ fontWeight: 700, lineHeight: 1.2, mb: 2, maxWidth: '500px' }}>
+                      <Typography
+                        variant="h3"
+                        sx={{
+                          fontFamily: 'Inter, sans-serif',
+                          fontWeight: 700,
+                          fontSize: '42px',
+                          lineHeight: '48px',
+                          letterSpacing: '0%',
+                          mb: 2,
+                          maxWidth: '550px'
+                        }}
+                      >
                         {slide.title}
                       </Typography>
-                      <Typography variant="body1" sx={{ opacity: 0.9, mb: 4, maxWidth: '400px' }}>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontFamily: 'Inter, sans-serif',
+                          fontWeight: 600,
+                          fontSize: '14px',
+                          lineHeight: '20px',
+                          letterSpacing: '0%',
+                          opacity: 0.9,
+                          mb: 4,
+                          maxWidth: '520px'
+                        }}
+                      >
                         {slide.description}
                       </Typography>
                     </Box>
