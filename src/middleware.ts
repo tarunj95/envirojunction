@@ -38,7 +38,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check for an active Auth0 session.
-  const session = await auth0.getSession(request, auth0Response);
+  const session = await auth0.getSession(request);
 
   if (!session) {
     // No session — redirect to /signin, preserving the intended destination.

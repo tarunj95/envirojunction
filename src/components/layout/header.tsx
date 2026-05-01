@@ -18,6 +18,7 @@ import Link from "next/link";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { cn } from "@/lib/utils";
 import { handleLogout } from "@/utils/auth";
+import { useUser } from "@auth0/nextjs-auth0/client";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },
@@ -29,6 +30,7 @@ const navItems = [
 
 export function Header() {
   const pathname = usePathname();
+  const { user } = useUser();
   const userAvatar = PlaceHolderImages.find(img => img.id === 'user-avatar');
 
   return (
@@ -73,8 +75,12 @@ export function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-11 w-11 rounded-full p-0 overflow-hidden ring-offset-2 hover:ring-2 hover:ring-[#00B660] transition-all">
               <Avatar className="h-11 w-11">
-                {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="User avatar" />}
-                <AvatarFallback>U</AvatarFallback>
+                {user?.picture ? (
+                  <AvatarImage src={user.picture} alt={user.name || "User avatar"} />
+                ) : userAvatar ? (
+                  <AvatarImage src={userAvatar.imageUrl} alt="User avatar" />
+                ) : null}
+                <AvatarFallback>{user?.name?.[0]?.toUpperCase() || "U"}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>

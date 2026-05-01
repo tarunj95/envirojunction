@@ -28,7 +28,7 @@ export const handleSocialLogin = (provider: string) => {
   // src/app/auth/[auth0]/route.ts
   // The `connection` param tells Auth0 which social IdP to use directly,
   // skipping the Universal Login screen.
-  const loginUrl = `/auth/login?connection=${encodeURIComponent(connection)}`;
+  const loginUrl = `/auth/login?returnTo=/profile&connection=${encodeURIComponent(connection)}`;
   window.location.href = loginUrl;
 };
 

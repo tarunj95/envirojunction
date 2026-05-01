@@ -30,8 +30,8 @@ export default function RootLayout({
       fetch('/auth/me')
         .then(res => {
           if (res.ok) {
-            // User is already logged in — send them to the dashboard
-            window.location.href = '/';
+            // User is already logged in — send them to the profile page
+            window.location.href = '/profile';
           }
         })
         .catch(() => {

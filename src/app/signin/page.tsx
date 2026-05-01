@@ -62,7 +62,7 @@ export default function SigninPage() {
         const { token, user } = response.data;
         if (token) localStorage.setItem('token', token);
         if (user) localStorage.setItem('user', JSON.stringify(user));
-        window.location.href = '/';
+        window.location.href = '/profile';
       } catch (error: any) {
         console.error('Signin error:', error);
         setSnackbar({

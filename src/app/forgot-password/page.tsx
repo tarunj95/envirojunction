@@ -452,10 +452,10 @@ export default function ForgotPasswordPage() {
                     value={digit}
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(index, e as any)}
-                    inputProps={{
+                    slotProps={{ htmlInput: {
                       maxLength: 1,
                       style: { textAlign: 'center', fontSize: '1.2rem', fontWeight: 'bold' }
-                    }}
+                    } }}
                     sx={{
                       width: { xs: '2.5rem', sm: '3.5rem' },
                       '& .MuiOutlinedInput-root': {
