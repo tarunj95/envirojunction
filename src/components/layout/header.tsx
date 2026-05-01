@@ -2,7 +2,6 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Leaf, LayoutDashboard, Newspaper, Briefcase, FileText, Lightbulb, Users } from "lucide-react";
+import { Search, Home, Briefcase, FileText, Lightbulb, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
@@ -21,70 +20,75 @@ import { cn } from "@/lib/utils";
 import { handleLogout } from "@/utils/auth";
 
 const navItems = [
-  { href: "/news", label: "News", icon: Newspaper },
+  { href: "/", label: "Home", icon: Home },
   { href: "/jobs", label: "Jobs", icon: Briefcase },
   { href: "/tenders", label: "Tenders", icon: FileText },
   { href: "/freelance", label: "Freelance", icon: Lightbulb },
   { href: "/professionals", label: "Professionals", icon: Users },
 ];
 
-
 export function Header() {
   const pathname = usePathname();
   const userAvatar = PlaceHolderImages.find(img => img.id === 'user-avatar');
 
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
-      <Link href="/" className="flex items-center gap-2 mr-4">
-        <img src="/logo.png" alt="EnviroJunction Logo" className="h-14 w-auto" />
+    <header className="sticky top-0 z-50 flex h-20 items-center gap-4 bg-white px-6 md:px-12 shadow-sm border-none">
+      <Link href="/" className="flex items-center gap-2 mr-8">
+        <img src="/logo.png" alt="EnviroJunction Logo" className="h-12 w-auto" />
       </Link>
-      <nav className="hidden md:flex items-center gap-2 text-sm font-medium">
+      
+      <nav className="hidden lg:flex items-center gap-8 text-sm font-medium">
         {navItems.map((item) => {
           const Icon = item.icon;
+          const isActive = pathname === item.href;
           return (
             <Link
               href={item.href}
               key={item.href}
               className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-md transition-colors",
-                (pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/"))
-                  ? "bg-primary/10 text-primary font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
+                "flex items-center gap-2 px-1 py-2 transition-colors relative",
+                isActive
+                  ? "text-[#00B660] font-semibold"
+                  : "text-[#666666] hover:text-[#00B660]"
               )}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className={cn("h-4 w-4", isActive ? "text-[#00B660]" : "text-gray-400")} />
               {item.label}
             </Link>
           );
         })}
       </nav>
-      <div className="flex items-center gap-4 ml-auto">
-        <div className="relative flex-1 md:grow-0">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+
+      <div className="flex items-center gap-6 ml-auto w-full max-w-md">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             type="search"
-            placeholder="Search..."
-            className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
+            placeholder="Search"
+            className="w-full rounded-xl bg-gray-50 border-gray-100 pl-10 pr-4 h-11 focus:ring-[#00B660] focus:border-[#00B660] text-sm"
           />
         </div>
+        
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-              <Avatar className="h-9 w-9">
-                {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="User avatar" data-ai-hint={userAvatar.imageHint} />}
+            <Button variant="ghost" className="relative h-11 w-11 rounded-full p-0 overflow-hidden ring-offset-2 hover:ring-2 hover:ring-[#00B660] transition-all">
+              <Avatar className="h-11 w-11">
+                {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="User avatar" />}
                 <AvatarFallback>U</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuContent align="end" className="w-56 mt-2 rounded-xl shadow-lg border-gray-100">
+            <DropdownMenuLabel className="font-bold text-gray-900">My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/profile">Profile</Link>
+            <DropdownMenuItem asChild className="cursor-pointer focus:bg-green-50 focus:text-green-700">
+              <Link href="/profile" className="flex w-full items-center">Profile</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer focus:bg-green-50 focus:text-green-700">Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">Log out</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-700 font-medium">
+              Log out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
