@@ -108,3 +108,23 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  @keyframes sparkle {
+    0% { transform: scale(0) rotate(0deg); opacity: 0; }
+    50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
+    100% { transform: scale(0) rotate(360deg); opacity: 0; }
+  }
+
+  .animate-sparkle {
+    animation: sparkle 0.8s ease-in-out forwards;
+  }
+
+  .delay-75 {
+    animation-delay: 75ms;
+  }
+
+  .delay-150 {
+    animation-delay: 150ms;
+  }
+}

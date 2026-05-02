@@ -31,17 +31,44 @@ import {
   ShieldAlert,
   TreePine,
   Sprout,
-  BarChart3
+  BarChart3,
+  Eye,
+  EyeOff,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import banner from "../../../public/profile-bg.png"
+import hiringImg from "../../../public/hiring-illustration.jpg"
 import { useUser } from "@auth0/nextjs-auth0/client";
+import Skeleton from '@mui/material/Skeleton';
+import Grid from '@mui/material/Grid';
+import Typography, { TypographyProps } from '@mui/material/Typography';
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("Short bio");
-  const { user } = useUser();
+  const { user, isLoading } = useUser();
+  const [revealedEmail, setRevealedEmail] = useState(false);
+  const [revealedPhone, setRevealedPhone] = useState(false);
+  const [isSparklingEmail, setIsSparklingEmail] = useState(false);
+  const [isSparklingPhone, setIsSparklingPhone] = useState(false);
+
+  const handleRevealEmail = () => {
+    setIsSparklingEmail(true);
+    setTimeout(() => {
+      setRevealedEmail(true);
+      setIsSparklingEmail(false);
+    }, 1000);
+  };
+
+  const handleRevealPhone = () => {
+    setIsSparklingPhone(true);
+    setTimeout(() => {
+      setRevealedPhone(true);
+      setIsSparklingPhone(false);
+    }, 1000);
+  };
 
   const tabs = [
     { name: "Short bio", icon: <FileText className="h-4 w-4" /> },
@@ -49,13 +76,68 @@ export default function ProfilePage() {
     { name: "Projects", icon: <FolderKanban className="h-4 w-4" /> },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="bg-[#F8FAF9] min-h-screen pb-20">
+        <div className="max-w-7xl mx-auto pt-6 px-4 md:px-6">
+          <div className="relative bg-white rounded-3xl overflow-hidden shadow-sm">
+            <Skeleton variant="rectangular" height={150} className="w-full" animation="wave" />
+            <div className="px-8 pb-8">
+              <div className="relative flex flex-col md:flex-row items-end gap-6 -mt-16 md:-mt-20">
+                <div className="relative h-40 w-40 rounded-2xl overflow-hidden border-4 border-white shadow-lg bg-white">
+                  <Skeleton variant="rectangular" width="100%" height="100%" animation="wave" />
+                </div>
+                <div className="flex-1 pb-2">
+                  <Skeleton variant="text" width="60%" height={40} animation="wave" />
+                  <Skeleton variant="text" width="40%" height={24} animation="wave" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto mt-8 px-4 md:px-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white rounded-3xl p-8 shadow-sm">
+              <div className="flex gap-4 border-b border-gray-100 pb-6 mb-8">
+                <Skeleton variant="rectangular" width={100} height={36} className="rounded-lg" />
+                <Skeleton variant="rectangular" width={100} height={36} className="rounded-lg" />
+                <Skeleton variant="rectangular" width={100} height={36} className="rounded-lg" />
+              </div>
+              <div className="space-y-6">
+                <Skeleton variant="text" width="30%" height={32} />
+                <Skeleton variant="text" width="100%" height={20} />
+                <Skeleton variant="text" width="100%" height={20} />
+                <Skeleton variant="text" width="80%" height={20} />
+              </div>
+            </div>
+          </div>
+          <div className="space-y-8">
+            <div className="bg-white rounded-3xl p-8 shadow-sm">
+              <Skeleton variant="text" width="50%" height={32} className="mb-6" />
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="flex gap-4 mb-6">
+                  <Skeleton variant="circular" width={40} height={40} />
+                  <div className="flex-1">
+                    <Skeleton variant="text" width="40%" />
+                    <Skeleton variant="text" width="70%" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#F8FAF9] min-h-screen pb-20">
       {/* Banner Section */}
       <div className="max-w-7xl mx-auto pt-6 px-4 md:px-6">
         <div className="relative bg-white rounded-3xl overflow-hidden shadow-sm">
           {/* Cover Image */}
-          <div className="relative h-[350px] w-full">
+          <div className="relative h-[150px] w-full">
             <Image
               src={banner}
               alt="Profile Background"
@@ -462,23 +544,73 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-4 group">
                 <div className="p-2 bg-gray-50 rounded-lg">
                   <Mail className="h-5 w-5 text-gray-400" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Email Address</p>
-                  <p className={cn("text-gray-900 font-bold", !user?.email && "blur-[4px]")}>{user?.email || "tejinder@gmail.com"}</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="relative">
+                      <p className={cn(
+                        "text-gray-900 font-bold transition-all duration-500",
+                        !revealedEmail && "blur-[6px] select-none"
+                      )}>
+                        {user?.email || "tarunjajoria95@gmail.com"}
+                      </p>
+                      {isSparklingEmail && (
+                        <div className="absolute inset-0 flex items-center justify-around pointer-events-none">
+                          <Sparkles className="h-4 w-4 text-yellow-400 animate-sparkle" />
+                          <Sparkles className="h-3 w-3 text-yellow-300 animate-sparkle delay-75" />
+                          <Sparkles className="h-4 w-4 text-yellow-500 animate-sparkle delay-150" />
+                        </div>
+                      )}
+                    </div>
+                    {!revealedEmail && (
+                      <button
+                        onClick={handleRevealEmail}
+                        className="p-1.5 hover:bg-green-50 rounded-lg transition-colors text-gray-400 hover:text-green-600"
+                        title="Show email"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-4 group">
                 <div className="p-2 bg-gray-50 rounded-lg">
                   <Phone className="h-5 w-5 text-gray-400" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Phone Number</p>
-                  <p className="text-gray-900 font-bold blur-[4px]">21239480202</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="relative">
+                      <p className={cn(
+                        "text-gray-900 font-bold transition-all duration-500",
+                        !revealedPhone && "blur-[6px] select-none"
+                      )}>
+                        +91 98765 43210
+                      </p>
+                      {isSparklingPhone && (
+                        <div className="absolute inset-0 flex items-center justify-around pointer-events-none">
+                          <Sparkles className="h-4 w-4 text-yellow-400 animate-sparkle" />
+                          <Sparkles className="h-3 w-3 text-yellow-300 animate-sparkle delay-75" />
+                          <Sparkles className="h-4 w-4 text-yellow-500 animate-sparkle delay-150" />
+                        </div>
+                      )}
+                    </div>
+                    {!revealedPhone && (
+                      <button
+                        onClick={handleRevealPhone}
+                        className="p-1.5 hover:bg-green-50 rounded-lg transition-colors text-gray-400 hover:text-green-600"
+                        title="Show phone number"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -499,7 +631,7 @@ export default function ProfilePage() {
 
               <div className="relative h-48 w-full mb-6">
                 <Image
-                  src="https://images.pexels.com/photos/34216444/pexels-photo-34216444.jpeg?_gl=1*1edr2hn*_ga*MTY5ODIyNjY4OS4xNzc0NTM3NzIx*_ga_8JE65Q40S6*czE3Nzc2MzA0NTQkbzIkZzEkdDE3Nzc2MzA0NjUkajQ5JGwwJGgw"
+                  src={hiringImg}
                   alt="Hiring Illustration"
                   fill
                   className="object-contain"
@@ -514,5 +646,39 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+const variants = [
+  'h1',
+  'h3',
+  'body1',
+  'caption',
+] as readonly TypographyProps['variant'][];
+
+function TypographyDemo(props: { loading?: boolean }) {
+  const { loading = false } = props;
+
+  return (
+    <div>
+      {variants.map((variant) => (
+        <Typography component="div" key={variant} variant={variant}>
+          {loading ? <Skeleton /> : variant}
+        </Typography>
+      ))}
+    </div>
+  );
+}
+
+function SkeletonTypography() {
+  return (
+    <Grid container spacing={8}>
+      <Grid size="grow">
+        <TypographyDemo loading />
+      </Grid>
+      <Grid size="grow">
+        <TypographyDemo />
+      </Grid>
+    </Grid>
   );
 }
