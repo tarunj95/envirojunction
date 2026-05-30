@@ -22,10 +22,10 @@ export default function Home() {
     // Tenders and freelance don't have post dates, so we'll use deadline for now.
     ...tenders.map((item) => ({ type: "tender", date: new Date(), data: item })),
     ...freelanceProjects.map((item) => ({ type: "freelance", date: new Date(), data: item })),
-  ].sort((a, b) => b.date.getTime() - a.date.getTime());
+  ].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 10);
 
   return (
-    <div className="container mx-auto space-y-8 pt-8">
+    <div className="space-y-8">
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-[250px_1fr_320px]">
         <div className="hidden lg:block">
           <ProfileOverviewCard />
