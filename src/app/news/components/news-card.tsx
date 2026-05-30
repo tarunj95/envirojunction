@@ -26,7 +26,7 @@ export function NewsCard({ article }: { article: NewsArticle }) {
         </div>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col p-4">
-        <Badge variant="secondary" className="mb-2 w-fit">{article.category}</Badge>
+        <Badge variant="outline" className="mb-2 w-fit font-semibold">{article.category}</Badge>
         <CardTitle className="mb-2 text-lg font-bold leading-tight font-headline">
           {article.title}
         </CardTitle>

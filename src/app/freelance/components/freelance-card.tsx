@@ -37,7 +37,7 @@ export function FreelanceCard({ project }: { project: FreelanceProject }) {
       <CardFooter className="flex flex-col items-start gap-4">
         <div className="flex flex-wrap gap-2">
           {project.skills.map((skill) => (
-            <Badge key={skill} variant="secondary">
+            <Badge key={skill} variant="outline" className="font-semibold">
               {skill}
             </Badge>
           ))}

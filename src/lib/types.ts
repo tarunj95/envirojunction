@@ -14,11 +14,14 @@ export type Job = {
   title: string;
   company: string;
   location: string;
-  type: "Internship" | "Full-time" | "Part-time";
+  type: string;
   postedDate: string;
   description: string;
   logoUrl: string;
   logoHint: string;
+  applied?: number;
+  capacity?: number;
+  tags?: string[];
 };
 
 export type Tender = {
