@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isHomePage = pathname === "/";
-  const isGrayBg = pathname?.startsWith("/jobs") || pathname?.startsWith("/profile") || pathname?.startsWith("/professionals") || pathname?.startsWith("/tenders");
+  const isGrayBg = pathname?.startsWith("/jobs") || pathname?.startsWith("/profile") || pathname?.startsWith("/professionals") || pathname?.startsWith("/tenders") || pathname?.startsWith("/");
 
   return (
     <div className={`flex min-h-svh w-full flex-col ${isGrayBg ? "bg-[#F8FAF9]" : ""}`}>

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Home, Briefcase, FileText, Lightbulb, Users } from "lucide-react";
+import { Search, Home, Briefcase, FileText, Newspaper, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
@@ -24,7 +24,7 @@ const navItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/jobs", label: "Jobs", icon: Briefcase },
   { href: "/tenders", label: "Tenders", icon: FileText },
-  { href: "/freelance", label: "Freelance", icon: Lightbulb },
+  { href: "/news", label: "News", icon: Newspaper },
   { href: "/professionals", label: "Professionals", icon: Users },
 ];
 

@@ -132,7 +132,7 @@ export default function ProfessionalsPage() {
   const [showChandigarhFilter, setShowChandigarhFilter] = useState(true);
 
   return (
-    <div className="w-full">
+    <div className="w-full px-4">
       {/* Header / Breadcrumb Section */}
       <div className="mb-6">
         <div className="flex justify-between items-center">

@@ -187,7 +187,7 @@ export default function TendersPage() {
     valUnder100 || val100to500 || valAbove500;
 
   return (
-    <div className="w-full">
+    <div className="w-full px-4">
       {/* Header / Breadcrumbs */}
       <div className="mb-6">
         <div className="flex justify-between items-center">
