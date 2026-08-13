@@ -16,19 +16,14 @@ const AUTH0_CONNECTIONS: Record<string, string> = {
  *
  * @param provider - One of: 'google' | 'linkedin' | 'facebook' | 'instagram'
  */
-export const handleSocialLogin = (provider: string) => {
-  const connection = AUTH0_CONNECTIONS[provider];
+export const handleSocialLogin = (provider?: string) => {
+  const connection = provider ? AUTH0_CONNECTIONS[provider.toLowerCase()] : undefined;
 
-  if (!connection) {
-    console.error(`[auth] Unknown provider: "${provider}". Add it to AUTH0_CONNECTIONS.`);
-    return;
+  let loginUrl = '/auth/login?returnTo=/profile';
+  if (connection) {
+    loginUrl += `&connection=${encodeURIComponent(connection)}`;
   }
 
-  // /auth/login is handled by Auth0's Next.js SDK route handler at:
-  // src/app/auth/[auth0]/route.ts
-  // The `connection` param tells Auth0 which social IdP to use directly,
-  // skipping the Universal Login screen.
-  const loginUrl = `/auth/login?returnTo=/profile&connection=${encodeURIComponent(connection)}`;
   window.location.href = loginUrl;
 };
 

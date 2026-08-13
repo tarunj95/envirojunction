@@ -11,7 +11,7 @@ export function Footer() {
         {/* Logo and Description */}
         <div className="lg:col-span-1">
           <Link href="/" className="flex items-center gap-2 mb-4">
-            <img src="/logo.png" alt="EnviroJunction Logo" className="h-10 w-auto" />
+            <img src="/Enviro Logo Green option.svg" alt="EnviroJunction Logo" className="h-10 w-auto" />
           </Link>
           <p className="text-gray-500 text-sm leading-relaxed max-w-xs">
             Discover the vibrant hub at Enviro Junction, where nature and community thrive together harmoniously.
@@ -59,7 +59,7 @@ export function Footer() {
             <Link href="#" className="bg-gray-100 p-2 rounded-full text-gray-600 hover:bg-green-600 hover:text-white transition-colors">
               <Instagram className="h-5 w-5" />
             </Link>
-            <Link href="#" className="bg-gray-100 p-2 rounded-full text-gray-600 hover:bg-green-600 hover:text-white transition-colors">
+            <Link href="https://www.linkedin.com/company/enviro-junction/" target="_blank" className="bg-gray-100 p-2 rounded-full text-gray-600 hover:bg-green-600 hover:text-white transition-colors">
               <Linkedin className="h-5 w-5" />
             </Link>
             <Link href="#" className="bg-gray-100 p-2 rounded-full text-gray-600 hover:bg-green-600 hover:text-white transition-colors">

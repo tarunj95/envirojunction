@@ -36,7 +36,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 flex h-20 items-center gap-4 bg-white px-6 md:px-12 shadow-sm border-none">
       <Link href="/" className="flex items-center gap-2 mr-8">
-        <img src="/logo.png" alt="EnviroJunction Logo" className="h-12 w-auto" />
+        <img src="/Enviro Logo Green option ( Horizontal ) (1).svg" alt="EnviroJunction Logo" className="h-[1.5rem] w-auto" />
       </Link>
       
       <nav className="hidden lg:flex items-center gap-8 text-sm font-medium">
