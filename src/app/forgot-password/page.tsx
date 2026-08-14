@@ -187,6 +187,9 @@ export default function ForgotPasswordPage() {
           background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)'
         }}
       >
+        <Link href="/" style={{ marginBottom: '24px' }}>
+          <img src="/Enviro%20Logo%20Green%20option.svg" alt="EnviroJunction" style={{ height: '44px', width: 'auto' }} />
+        </Link>
         <Typography
           variant="h5"
           sx={{
@@ -252,7 +255,9 @@ export default function ForgotPasswordPage() {
           <Box sx={{ zIndex: 1, position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
             <Box>
               <Box sx={{ mb: 8 }}>
-                <img src="/logo.png" alt="EnviroJunction" style={{ height: '40px', filter: 'brightness(0) invert(1)' }} />
+                <Link href="/">
+                  <img src="/Enviro%20Logo%20Green%20option.svg" alt="EnviroJunction" style={{ height: '40px', width: 'auto' }} />
+                </Link>
               </Box>
             </Box>
 

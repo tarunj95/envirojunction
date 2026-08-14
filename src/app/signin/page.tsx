@@ -2,9 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import slideImage from "../../../public/signin_bg_carousel.png";
+import logo from "../../../public/Enviro Logo Green option.svg"
 import {
   Box,
   Typography,
@@ -166,6 +168,9 @@ export default function SigninPage() {
           background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)'
         }}
       >
+        <Link href="/" className="flex items-center gap-2 mr-8">
+        <img src="/Enviro Logo Green option ( Horizontal ) (1).svg" alt="EnviroJunction Logo" className="h-[1.5rem] w-auto" />
+      </Link>
         <Typography
           variant="h5"
           sx={{
@@ -231,7 +236,9 @@ export default function SigninPage() {
           <Box sx={{ zIndex: 1, position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
             <Box>
               <Box sx={{ mb: 8 }}>
-                <img src="/logo.png" alt="EnviroJunction" style={{ height: '40px', filter: 'brightness(0) invert(1)' }} />
+                <Link href="/" className="flex items-center gap-2 mr-8">
+                  <img src="/Enviro Logo Green option ( Horizontal ) (1).svg" alt="EnviroJunction Logo" className="h-[1.5rem] w-auto" />
+              </Link>
               </Box>
             </Box>
 
