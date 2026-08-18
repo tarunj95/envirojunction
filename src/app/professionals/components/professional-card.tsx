@@ -85,7 +85,8 @@ export function ProfessionalCard({ professional, isHighlighted = false }: Profes
             </div>
             
             <Button 
-              className="h-8 px-4 text-sm font-medium rounded-md shadow-none transition-colors bg-[#315D40]  hover:bg-[#19C26E] text-white"
+              disabled
+              className="h-8 px-4 text-sm font-medium rounded-md shadow-none transition-colors bg-[#315D40] hover:bg-[#19C26E] text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
               View More
             </Button>

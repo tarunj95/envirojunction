@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import {
   DropdownMenu,
@@ -32,6 +32,19 @@ export function Header() {
   const pathname = usePathname();
   const { user } = useUser();
   const userAvatar = PlaceHolderImages.find(img => img.id === 'user-avatar');
+
+  const [localUser, setLocalUser] = useState<any>(null);
+
+  useEffect(() => {
+    const localUserStr = localStorage.getItem('user');
+    if (localUserStr) {
+      try {
+        setLocalUser(JSON.parse(localUserStr));
+      } catch (e) {
+        console.error("Error parsing local user:", e);
+      }
+    }
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 flex h-20 items-center gap-4 bg-white px-6 md:px-12 shadow-sm border-none">
@@ -75,12 +88,12 @@ export function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-11 w-11 rounded-full p-0 overflow-hidden ring-offset-2 hover:ring-2 hover:ring-[#00B660] transition-all">
               <Avatar className="h-11 w-11">
-                {user?.picture ? (
+                {user?.picture && (
                   <AvatarImage src={user.picture} alt={user.name || "User avatar"} />
-                ) : userAvatar ? (
-                  <AvatarImage src={userAvatar.imageUrl} alt="User avatar" />
-                ) : null}
-                <AvatarFallback>{user?.name?.[0]?.toUpperCase() || "U"}</AvatarFallback>
+                )}
+                <AvatarFallback className="bg-[#E8F5E9] text-[#00B660] font-bold text-lg">
+                  {(user?.name || localUser?.name || "U")[0]?.toUpperCase()}
+                </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>

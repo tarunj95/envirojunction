@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { tenders } from "@/lib/data";
+import { useEffect, useState } from "react";
+import { Tender } from "@/lib/types";
 import { TenderCard } from "./components/tender-card";
 import {
   Select,
@@ -39,6 +39,44 @@ export default function TendersPage() {
   const [pageSize, setPageSize] = useState<number>(12);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [sortBy, setSortBy] = useState<string>("latest");
+  const [tenders, setTenders] = useState<Tender[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // API Pagination state
+  const [totalPages, setTotalPages] = useState<number>(12);
+  const [totalResults, setTotalResults] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchTenders = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`/api-backend/tenders?page=${currentPage}&limit=${pageSize}`);
+        const data = await response.json();
+        
+        const mappedTenders: Tender[] = (data.data || []).map((item: any) => ({
+          id: item._id,
+          title: item.title || "Untitled Tender",
+          organization: item.organisation || item.authority_type || "Unknown Organization",
+          deadline: item.deadline || item.publication_date || "Unknown Deadline",
+          details: item.description || item.scope_of_work || "No details available",
+          value: item.value || "Not Disclosed"
+        }));
+        
+        setTenders(mappedTenders);
+        if (data.pagination) {
+          // Force at least 12 pages for UI prototype
+          setTotalPages(Math.max(data.pagination.pages || 1, 12));
+          setTotalResults(data.pagination.total || 0);
+        }
+      } catch (error) {
+        console.error("Error fetching tenders:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchTenders();
+  }, [currentPage, pageSize]);
 
   // Search States
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -161,15 +199,14 @@ export default function TendersPage() {
     if (sortBy === "value_asc") {
       return getNumericValue(a.value) - getNumericValue(b.value);
     }
-    // "latest" default (mocked by array index or ID)
-    return parseInt(b.id) - parseInt(a.id);
+    // "latest" default (preserve order from API response)
+    return 0;
   });
 
   // Pagination calculation
+  const displayedTenders = sortedTenders;
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const displayedTenders = sortedTenders.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(sortedTenders.length / pageSize);
+  const currentCount = displayedTenders.length;
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -468,8 +505,8 @@ export default function TendersPage() {
             <div className="mb-4 sm:mb-0">
               <h2 className="text-xl font-semibold text-gray-900">All Tenders & Bids</h2>
               <p className="text-sm text-gray-500 mt-1">
-                {sortedTenders.length > 0
-                  ? `Showing ${startIndex + 1}–${Math.min(endIndex, sortedTenders.length)} of ${sortedTenders.length} results`
+                {currentCount > 0
+                  ? `Showing ${startIndex + 1}–${startIndex + currentCount} of ${totalResults} results`
                   : "Showing 0 results"}
               </p>
             </div>
@@ -494,7 +531,12 @@ export default function TendersPage() {
           </div>
 
           {/* Cards Grid/List */}
-          {displayedTenders.length > 0 ? (
+          {isLoading ? (
+            <div className="text-center py-12 flex flex-col items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#315D40] mb-4"></div>
+              <p className="text-gray-500 text-lg">Loading tenders...</p>
+            </div>
+          ) : displayedTenders.length > 0 ? (
             <div className={viewMode === 'list' ? "flex flex-col gap-4" : "grid grid-cols-1 md:grid-cols-2 gap-4"}>
               {displayedTenders.map((tender) => (
                 <TenderCard key={tender.id} tender={tender} viewMode={viewMode} />
@@ -510,7 +552,7 @@ export default function TendersPage() {
           )}
 
           {/* Pagination */}
-          {totalPages > 1 && (
+          {totalPages > 0 && (
             <div className="flex justify-center items-center gap-2 mt-8 border-t border-gray-100 pt-6">
               <Button 
                 variant="ghost" 

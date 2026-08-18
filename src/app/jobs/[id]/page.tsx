@@ -1,10 +1,9 @@
 "use client";
 
-import React, { use, useState } from "react";
+import React, { use, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { jobs } from "@/lib/data";
 import { Job } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,8 +47,52 @@ export default function JobDetailPage({ params }: PageProps) {
   const router = useRouter();
   const { id } = use(params);
   
-  // Find current job
-  const job = jobs.find((j) => j.id === id);
+  const [job, setJob] = useState<Job | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [allRelated, setAllRelated] = useState<Job[]>([]);
+  const [relatedIndex, setRelatedIndex] = useState(0);
+
+  useEffect(() => {
+    const fetchJob = async () => {
+      try {
+        const response = await fetch('/api-backend/jobs?page=1&limit=50');
+        const result = await response.json();
+        if (result.data) {
+          const mappedJobs = result.data.map((job: any) => ({
+            id: job._id,
+            title: job.title || "Untitled Job",
+            company: job.organisation || "Unknown Company",
+            location: job.location || "Location not specified",
+            type: job.job_type || "Full-time",
+            postedDate: job.date_posted || "",
+            description: job.description || "",
+            logoUrl: "",
+            logoHint: job.organisation ? job.organisation.charAt(0) : "J",
+            tags: [],
+            responsibilities: job.responsibilities || "",
+            requirements: job.requirements || "",
+            sourceUrl: job.source_url || "",
+          }));
+          const foundJob = mappedJobs.find((j: Job) => j.id === id);
+          setJob(foundJob || null);
+          setAllRelated(mappedJobs.filter((j: Job) => j.id !== id));
+        }
+      } catch (error) {
+        console.error("Failed to fetch jobs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchJob();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8 bg-white border border-gray-100 rounded-3xl shadow-sm">
+        <p className="text-gray-500 mb-6">Loading job details...</p>
+      </div>
+    );
+  }
 
   // If job is not found, display a friendly message
   if (!job) {
@@ -74,7 +117,7 @@ export default function JobDetailPage({ params }: PageProps) {
   const email = `career@${job.company.toLowerCase().replace(/\s+/g, "")}.com`;
   
   // Calculate dynamic expire date (30 days from posted date)
-  const posted = new Date(job.postedDate);
+  const posted = job.postedDate ? new Date(job.postedDate) : new Date();
   const expireDate = new Date(posted.getTime() + 30 * 24 * 60 * 60 * 1000);
   const formattedExpire = expireDate.toLocaleDateString("en-US", {
     month: "long",
@@ -92,26 +135,25 @@ export default function JobDetailPage({ params }: PageProps) {
   const education = "Graduation";
 
   // Detailed Description Template
-  const descriptionText = `${job.description || "Looking for a talented team member."} Integer aliquet pretium consequat. Donec et sapien id leo accumsan pellentesque eget maximus tellus. Duis et est ac leo rhoncus tincidunt vitae vehicula augue. Donec in suscipit diam. Pellentesque quis justo sit amet arcu commodo sollicitudin. Integer finibus blandit condimentum. Vivamus sit amet ligula ullamcorper, pulvinar ante id, tristique erat. Quisque sit amet aliquam urna. Maecenas blandit felis id massa sodales finibus. Integer bibendum eu nulla eu sollicitudin. Sed lobortis diam tincidunt accumsan faucibus. Quisque blandit augue quis turpis auctor, dapibus euismod ante ultricies. Ut non felis lacinia turpis feugiat euismod at id magna. Sed ut orci arcu. Suspendisse sollicitudin faucibus aliquet.
-
-Nam dapibus consectetur erat in euismod. Cras urna augue, mollis venenatis augue sed, porttitor aliquet nibh. Sed tristique dictum elementum. Nulla imperdiet sit amet quam eget lobortis. Etiam in neque sit amet orci interdum tincidunt.`;
+  const descriptionText = job.description || "Looking for a talented team member.";
 
   // Responsibilities Template
-  const responsibilities = [
-    "Quisque semper gravida est ac consectetur.",
-    "Curabitur blandit lorem velit, vitae pretium leo placerat eget.",
-    "Morbi mattis in ipsum ac tempus.",
-    "Curabitur eu vehicula libero. Vestibulum sed purus ullamcorper, lobortis lectus nec.",
-    "vulputate turpis. Quisque ante odio, iaculis a porttitor sit amet.",
-    "lobortis vel lectus. Nulla at risus ut diam.",
-    "commodo feugiat. Nullam laoreet, diam placerat dapibus tincidunt.",
-    "odio metus posuere lorem, id condimentum erat velit nec neque.",
-    "dui sodales ut. Curabitur tempus augue."
-  ];
+  let responsibilitiesList: string[] = [];
+  if (job.responsibilities) {
+    responsibilitiesList = job.responsibilities.split(';').map(s => s.trim()).filter(s => s.length > 0);
+  } else {
+    responsibilitiesList = [
+      "Quisque semper gravida est ac consectetur.",
+      "Curabitur blandit lorem velit, vitae pretium leo placerat eget.",
+      "Morbi mattis in ipsum ac tempus."
+    ];
+  }
+  
+  let requirementsList: string[] = [];
+  if (job.requirements) {
+    requirementsList = job.requirements.split(';').map(s => s.trim()).filter(s => s.length > 0);
+  }
 
-  // Related jobs search
-  const allRelated = jobs.filter(j => j.id !== job.id);
-  const [relatedIndex, setRelatedIndex] = useState(0);
   const displayedRelated = allRelated.slice(relatedIndex, relatedIndex + 3);
 
   const nextRelated = () => {
@@ -217,10 +259,19 @@ Nam dapibus consectetur erat in euismod. Cras urna augue, mollis venenatis augue
             <Button variant="outline" className="p-3 bg-[#EAF3FA] hover:bg-[#D4E8F5] text-[#3182CE] border-0 h-11 w-11 rounded-xl transition-all shadow-none">
               <Bookmark className="h-5 w-5 fill-[#3182CE]" />
             </Button>
-            <Button className="bg-[#315D40] hover:bg-[#254A32] text-white flex-1 md:flex-none px-6 py-2.5 h-11 rounded-xl font-medium flex items-center justify-center gap-2 transition-all">
-              <span>Apply Now</span>
-              <ArrowLeft className="h-4 w-4 rotate-180" />
-            </Button>
+            {job.sourceUrl ? (
+              <a href={job.sourceUrl} target="_blank" rel="noopener noreferrer" className="flex-1 md:flex-none">
+                <Button className="w-full bg-[#315D40] hover:bg-[#254A32] text-white px-6 py-2.5 h-11 rounded-xl font-medium flex items-center justify-center gap-2 transition-all">
+                  <span>Apply Now</span>
+                  <ArrowLeft className="h-4 w-4 rotate-180" />
+                </Button>
+              </a>
+            ) : (
+              <Button className="bg-[#315D40] hover:bg-[#254A32] text-white flex-1 md:flex-none px-6 py-2.5 h-11 rounded-xl font-medium flex items-center justify-center gap-2 transition-all">
+                <span>Apply Now</span>
+                <ArrowLeft className="h-4 w-4 rotate-180" />
+              </Button>
+            )}
           </div>
           <p className="text-xs text-gray-500 font-medium mt-1">
             Job expire in: <span className="text-[#E05151] font-semibold">{formattedExpire}</span>
@@ -246,13 +297,26 @@ Nam dapibus consectetur erat in euismod. Cras urna augue, mollis venenatis augue
           <div className="space-y-4">
             <h2 className="text-lg md:text-xl font-bold text-gray-900">Responsibilities</h2>
             <ul className="list-disc list-outside pl-5 space-y-3 text-gray-600 text-[15px]">
-              {responsibilities.map((resp, index) => (
+              {responsibilitiesList.map((resp, index) => (
                 <li key={index} className="pl-1">
                   {resp}
                 </li>
               ))}
             </ul>
           </div>
+
+          {requirementsList.length > 0 && (
+            <div className="space-y-4">
+              <h2 className="text-lg md:text-xl font-bold text-gray-900">Requirements</h2>
+              <ul className="list-disc list-outside pl-5 space-y-3 text-gray-600 text-[15px]">
+                {requirementsList.map((req, index) => (
+                  <li key={index} className="pl-1">
+                    {req}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Share job */}
           <div className="border-t border-gray-100 pt-6 flex flex-wrap items-center gap-4">

@@ -22,6 +22,9 @@ export type Job = {
   applied?: number;
   capacity?: number;
   tags?: string[];
+  responsibilities?: string;
+  requirements?: string;
+  sourceUrl?: string;
 };
 
 export type Tender = {

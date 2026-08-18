@@ -13,6 +13,12 @@ const PUBLIC_PATHS = ["/signup", "/signin", "/forgot-password"];
 function isPublicPath(pathname: string): boolean {
   // Auth0 SDK handles its own /auth/* routes — always allow them through.
   if (pathname.startsWith("/auth/")) return true;
+  if (pathname.startsWith("/api/")) return true;
+  if (pathname.startsWith("/news")) return true;
+  if (pathname.startsWith("/backend-news")) return true;
+
+  // Allow static images and assets
+  if (/\.(jpg|jpeg|png|svg|gif|webp|ico)$/i.test(pathname)) return true;
 
   return PUBLIC_PATHS.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`)
@@ -39,8 +45,9 @@ export async function middleware(request: NextRequest) {
 
   // Check for an active Auth0 session.
   const session = await auth0.getSession(request);
+  const hasCustomToken = request.cookies.has("token") || request.cookies.has("user_exists");
 
-  if (!session) {
+  if (!session && !hasCustomToken) {
     // No session — redirect to /signin, preserving the intended destination.
     const signinUrl = request.nextUrl.clone();
     signinUrl.pathname = "/signin";

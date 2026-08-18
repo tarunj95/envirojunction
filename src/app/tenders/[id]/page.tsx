@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useState } from "react";
+import React, { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { tenders } from "@/lib/data";
@@ -48,9 +48,33 @@ export default function TenderDetailPage({ params }: PageProps) {
   const router = useRouter();
   const { id } = use(params);
   const [isSaved, setIsSaved] = useState(false);
+  const [tender, setTender] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Find current tender
-  const tender = tenders.find((t) => t.id === id);
+  useEffect(() => {
+    const fetchTender = async () => {
+      try {
+        const response = await fetch(`/api-backend/tenders?limit=100`);
+        const data = await response.json();
+        const found = data.data?.find((t: any) => t._id === id);
+        setTender(found);
+      } catch (error) {
+        console.error("Error fetching tender:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTender();
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 bg-[#F7F9FB] -mx-4 -mt-6">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#315D40] mb-4"></div>
+        <p className="text-gray-500 text-lg">Loading tender details...</p>
+      </div>
+    );
+  }
 
   // If tender not found
   if (!tender) {
@@ -69,60 +93,47 @@ export default function TenderDetailPage({ params }: PageProps) {
     );
   }
 
-  const isENTTender = tender.id === "4";
+  // Dynamic Fields populated from API data
+  const title = tender.title || "-";
+  const organization = tender.organisation || tender.authority_type || "-";
+  const tenderID = tender.tender_id || "-";
+  const referenceNumber = tender.reference_number || "-";
+  const tenderType = tender.authority_type || "-";
 
-  // Dynamic Fields populated from the exact screenshot data
-  const title = tender.title;
-  const organization = tender.organization;
-  const tenderID = isENTTender ? "2026_AIIMN_907188_1" : `2024_${tender.organization.substring(0, 5).replace(/[^a-zA-Z]/g, "").toUpperCase()}_${tender.id}0839_1`;
-  const referenceNumber = isENTTender ? "AIIMS-NAG/PMJAY/ENTC/OTE/26/01" : `${tender.organization.substring(0, 5).replace(/[^a-zA-Z]/g, "").toUpperCase()}/OTE/${tender.id}6/01`;
-  const tenderType = isENTTender ? "Open Tender (Supply)" : "Open Tender";
+  const tenderFee = tender.tender_fee ? `₹${tender.tender_fee}` : "-";
+  const emdAmount = tender.emd || tender.value || "-";
+  const emdPayableTo = organization !== "-" ? `Director, ${organization}` : "-";
+  const paymentInstruments = "-";
 
-  const tenderFee = "₹0.00 (Exempted: No)";
-  const emdAmount = isENTTender ? "₹50,000 (Fixed)" : `${tender.value} (Fixed)`;
-  const emdPayableTo = isENTTender ? "Director AIIMS Nagpur" : `Director, ${tender.organization}`;
-  const paymentInstruments = "Demand Draft, FDR, Bankers Cheque, Bank Guarantee";
+  const publishedDate = tender.publication_date || "-";
+  const submissionEndDate = tender.deadline || "-";
+  const bidOpeningDate = tender.deadline ? `${tender.deadline} 03:30 PM` : "-"; 
+  const docDownloadEndDate = tender.deadline || "-";
 
-  const publishedDate = isENTTender ? "02-May-2026 05:00 PM" : "01-Jul-2024 10:00 AM";
-  const submissionEndDate = isENTTender ? "30-May-2026 03:00 PM" : `${tender.deadline} 03:00 PM`;
-  const bidOpeningDate = isENTTender ? "01-Jun-2026 03:30 PM" : "02-Oct-2024 03:30 PM"; // dynamic fallback
-  const docDownloadEndDate = isENTTender ? "30-May-2026 03:00 PM" : `${tender.deadline} 03:00 PM`;
+  const productCategory = tender.sector || "-"; 
+  const contractType = tender.contract_duration ? `Duration: ${tender.contract_duration}` : "-"; 
+  const periodOfWork = tender.contract_duration || "-"; 
+  const bidValidity = tender.bid_validity || "-"; 
 
-  const productCategory = "₹0.00 (Exempted: No)"; // matches the mockup duplication
-  const contractType = emdAmount; // matches the mockup duplication
-  const periodOfWork = emdPayableTo; // matches the mockup duplication
-  const bidValidity = paymentInstruments; // matches the mockup duplication
+  const covers = "-";
+  const withdrawalAllowed = "-";
+  const ndaRequired = "-";
+  const documentUrl = tender.document_url || null;
 
-  const covers = "2 (Fee/PreQual/Technical & Finance)";
-  const withdrawalAllowed = "Yes";
-  const ndaRequired = "No";
-
-  const contactName = isENTTender ? "Director, AIIMS Nagpur" : `Director, ${tender.organization}`;
-  const contactAddress = isENTTender ? "Mihan, Nagpur - 441108" : `123 Sector 12, Chandigarh, India`;
-  const contactPhone = isENTTender ? "0712-2352000" : "(123) 456-7890";
-  const contactEmail = isENTTender ? "procurement@aiimsnagpur.edu.in" : `procurement@${tender.organization.substring(0, 5).replace(/[^a-zA-Z]/g, "").toLowerCase()}.gov.in`;
+  const contactName = organization !== "-" ? `Director, ${organization}` : "-";
+  const contactAddress = tender.location || "-";
+  const contactPhone = "-";
+  const contactEmail = organization !== "-" ? `procurement@${organization.substring(0, 5).replace(/[^a-zA-Z]/g, "").toLowerCase()}.gov.in` : "-";
 
   // Detailed Description template matching the mockup exactly
-  const welcomeTitle = "Welcome to Echo Thems";
-  const welcomeText = "Echo Thems is committed to fostering a vibrant work culture that prioritizes environmental sustainability. Their team thrives in a collaborative atmosphere where innovation meets responsibility. Employees are encouraged to share ideas that contribute to eco-friendly practices, making every project a step towards a greener future. With flexible work arrangements and a focus on well-being, Echo Thems empowers its workforce to balance productivity with a passion for protecting the planet.";
+  const welcomeTitle = title;
+  const welcomeText = tender.description || "-";
   
-  const essentialSkills = [
-    "A portfolio demonstrating well thought through and polished end-to-end user journeys",
-    "5+ years of industry experience in interactive design and / or visual design",
-    "Excellent interpersonal skills",
-    "Aware of trends in mobile, communications, and collaboration",
-    "Ability to create highly polished design prototypes, mockups, and other communication artifacts",
-    "The ability to scope and estimate efforts accurately and prioritize tasks and goals independently",
-    "History of impacting shipping products with your work",
-    "A Bachelor's degree in Design (or related field) or equivalent professional experience",
-    "Proficiency in a variety of design tools such as Figma, Photoshop, Illustrator, and Sketch"
-  ];
+  const essentialSkills = tender.scope_of_work 
+    ? [tender.scope_of_work]
+    : ["-"];
 
-  const preferredExperience = [
-    "Designing user experiences for enterprise software / services",
-    "Creating and applying established design principles and interaction patterns",
-    "Aligning or influencing design thinking with teams working in other geographies"
-  ];
+  const preferredExperience = ["-"];
 
   // Similar Tenders Sidebar Data
   const similarTenders = [
@@ -219,6 +230,7 @@ export default function TenderDetailPage({ params }: PageProps) {
         <div className="flex-shrink-0 self-stretch md:self-auto flex items-center gap-3">
           <Button 
             className="bg-[#315D40] hover:bg-[#254A32] text-white font-semibold px-6 py-2.5 h-11 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all text-sm"
+            onClick={() => tender.url && window.open(tender.url, '_blank', 'noopener,noreferrer')}
           >
             <span className="tracking-wide">Apply now</span>
             <ArrowUpRight className="h-4 w-4" />
@@ -449,6 +461,22 @@ export default function TenderDetailPage({ params }: PageProps) {
                     <p className="text-sm font-medium text-gray-700 mt-1">{ndaRequired}</p>
                   </div>
                 </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="bg-gray-100 text-gray-500 p-2 rounded-xl flex-shrink-0">
+                    <FolderLock className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide leading-none">Document</p>
+                    {documentUrl ? (
+                      <a href={documentUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-emerald-700 hover:underline mt-1 block break-all">
+                        View Document
+                      </a>
+                    ) : (
+                      <p className="text-sm font-medium text-gray-700 mt-1">-</p>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -501,7 +529,7 @@ export default function TenderDetailPage({ params }: PageProps) {
             </div>
 
             <div className="text-gray-400 text-sm italic font-medium pt-2">
-              -- Echo Themes --
+              -- {organization} --
             </div>
 
             {/* Bottom Actions Row inside card */}
@@ -509,6 +537,7 @@ export default function TenderDetailPage({ params }: PageProps) {
               <div className="flex items-center gap-3">
                 <Button 
                   className="bg-[#315D40] hover:bg-[#254A32] text-white font-semibold px-6 py-2 h-10 rounded-xl text-sm"
+                  onClick={() => tender.url && window.open(tender.url, '_blank', 'noopener,noreferrer')}
                 >
                   Apply now
                 </Button>
@@ -553,11 +582,11 @@ export default function TenderDetailPage({ params }: PageProps) {
           <div className="bg-white border border-gray-200/60 rounded-3xl p-5 shadow-sm space-y-5">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-emerald-50 text-[#315D40] font-bold text-lg flex items-center justify-center uppercase select-none">
-                E
+                {organization.charAt(0)}
               </div>
               <div className="min-w-0">
-                <h3 className="font-bold text-gray-900 text-base leading-tight">Echo Themes</h3>
-                <p className="text-sm text-gray-400 mt-0.5 font-medium">Chandigarh, India</p>
+                <h3 className="font-bold text-gray-900 text-base leading-tight">{organization}</h3>
+                <p className="text-sm text-gray-400 mt-0.5 font-medium">{tender.location || 'Chandigarh, India'}</p>
               </div>
             </div>
 
@@ -608,7 +637,7 @@ export default function TenderDetailPage({ params }: PageProps) {
             <div className="space-y-2 text-sm text-gray-500 font-medium leading-relaxed">
               <p className="flex items-start gap-2">
                 <MapPin className="h-3.5 w-3.5 text-gray-400 mt-0.5 flex-shrink-0" />
-                <span>123 Sector 12, Chandigarh, 160017, India</span>
+                <span>{tender.location || '123 Sector 12, Chandigarh, 160017, India'}</span>
               </p>
               <p className="flex items-center gap-2">
                 <Phone className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
@@ -616,7 +645,7 @@ export default function TenderDetailPage({ params }: PageProps) {
               </p>
               <p className="flex items-center gap-2">
                 <Mail className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
-                <span>contact@echothemes.com</span>
+                <span>{contactEmail}</span>
               </p>
             </div>
           </div>

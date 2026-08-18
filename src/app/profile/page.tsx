@@ -45,6 +45,7 @@ import { cn } from "@/lib/utils";
 import banner from "../../../public/profile-bg.png"
 import hiringImg from "../../../public/hiring-illustration.jpg"
 import { useUser } from "@auth0/nextjs-auth0/client";
+import { syncSocialUserWithBackend } from "@/utils/auth";
 import Skeleton from '@mui/material/Skeleton';
 import Grid from '@mui/material/Grid';
 import Typography, { TypographyProps } from '@mui/material/Typography';
@@ -56,6 +57,7 @@ export default function ProfilePage() {
   const [revealedPhone, setRevealedPhone] = useState(false);
   const [isSparklingEmail, setIsSparklingEmail] = useState(false);
   const [isSparklingPhone, setIsSparklingPhone] = useState(false);
+  const [localUserData, setLocalUserData] = useState<any>(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState("");
@@ -276,10 +278,103 @@ export default function ProfilePage() {
   );
 
   useEffect(() => {
-    if (user?.name) {
-      setEditedName(user.name);
+    const fetchLocalUser = async () => {
+      const localUserStr = localStorage.getItem('user');
+      const localToken = localStorage.getItem('token');
+      
+      if (localUserStr && localToken) {
+        try {
+          const localUser = JSON.parse(localUserStr);
+          if (localUser && localUser.id) {
+            const res = await fetch(`/api-backend/users/profile`, {
+              headers: {
+                'Authorization': `Bearer ${localToken}`
+              }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              setLocalUserData(data);
+              if (data.name) setEditedName(data.name);
+              if (data.title) setEditedRole(data.title);
+              if (data.headline) setEditedHeadline(data.headline);
+              if (data.about) setEditedAbout(data.about);
+              if (data.phone) setEditedPhone(data.phone);
+              if (data.professional_skills) setEditedSkills(data.professional_skills);
+              if (data.sectors) setEditedSectors(data.sectors);
+              if (data.languages) setEditedLanguages(data.languages);
+              
+              if (data.services) {
+                setEditedServices(data.services.map((service: any, index: number) => ({
+                  id: index,
+                  title: typeof service === 'string' ? service : service.title || "",
+                  icon: <Leaf className="h-4 w-4" />
+                })));
+              }
+              
+              if (data.education) {
+                setEditedEducations(data.education.map((edu: any, index: number) => ({
+                  id: index,
+                  title: edu.title || "",
+                  university: edu.name || "",
+                  years: `${edu.start_year || ""} - ${edu.end_year || ""}`
+                })));
+              }
+              
+              if (data.certifications) {
+                setEditedCertifications(data.certifications.map((cert: any, index: number) => ({
+                  id: index,
+                  title: cert.title || "",
+                  issuer: cert.name || "",
+                  years: `${cert.start_year || ""} - ${cert.end_year || ""}`
+                })));
+              }
+              
+              if (data.work_experience) {
+                setEditedExperiences(data.work_experience.map((exp: any, index: number) => ({
+                  id: index,
+                  title: exp.title || "",
+                  company: exp.name || "",
+                  startDate: exp.start_year ? String(exp.start_year) : "",
+                  endDate: exp.end_year ? String(exp.end_year) : "",
+                  description: exp.about || "",
+                  active: exp.isPresent || false
+                })));
+              }
+
+              if (data.projects && Array.isArray(data.projects)) {
+                setEditedProjects(data.projects.map((proj: any, index: number) => ({
+                  id: index,
+                  title: proj.title || "",
+                  description: proj.description || "",
+                  org: proj.name || "",
+                  location: proj.location || "",
+                  tags: "",
+                  type: "",
+                  time: "",
+                  status: "Done",
+                  icon: <Leaf className="h-6 w-6 text-white" />,
+                  iconBg: "bg-green-500"
+                })));
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Error fetching local user:", e);
+        }
+      }
+    };
+
+    fetchLocalUser();
+
+    if (user) {
+      if (user.name) {
+        setEditedName(user.name);
+      }
+      syncSocialUserWithBackend(user).catch((err) => {
+        console.warn('Backend social sync notice:', err?.message || err);
+      });
     }
-  }, [user?.name]);
+  }, [user]);
 
   const totalExperienceYears = useMemo(() => {
     let minYear = Infinity;
@@ -304,6 +399,18 @@ export default function ProfilePage() {
     return 0;
   }, [editedExperiences]);
 
+  const profileCompletion = useMemo(() => {
+    let score = 10; // Base score
+    if (editedHeadline?.trim() && editedAbout?.trim()) score += 30;
+    else if (editedHeadline?.trim() || editedAbout?.trim()) score += 15;
+    
+    if (editedSkills && editedSkills.length > 0) score += 30;
+    
+    if (editedProjects && editedProjects.length > 0) score += 30;
+    
+    return Math.min(100, score);
+  }, [editedHeadline, editedAbout, editedSkills, editedProjects]);
+
   const handleRevealEmail = () => {
     setIsSparklingEmail(true);
     setTimeout(() => {
@@ -318,6 +425,79 @@ export default function ProfilePage() {
       setRevealedPhone(true);
       setIsSparklingPhone(false);
     }, 1000);
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      const localUserStr = localStorage.getItem('user');
+      const localToken = localStorage.getItem('token');
+      if (!localUserStr || !localToken) return;
+
+      const localUser = JSON.parse(localUserStr);
+      if (!localUser.id) return;
+
+      const payload = {
+        name: editedName,
+        title: editedRole,
+        headline: editedHeadline,
+        about: editedAbout,
+        education: editedEducations.map(edu => {
+          const years = edu.years ? edu.years.split('-') : [];
+          return {
+            title: edu.title,
+            name: edu.university,
+            start_year: parseInt(years[0]?.trim()) || null,
+            end_year: parseInt(years[1]?.trim()) || null
+          };
+        }),
+        certifications: editedCertifications.map(cert => {
+          const years = cert.years ? cert.years.split('-') : [];
+          return {
+            title: cert.title,
+            name: cert.issuer,
+            start_year: parseInt(years[0]?.trim()) || null,
+            end_year: parseInt(years[1]?.trim()) || null
+          };
+        }),
+        work_experience: editedExperiences.map(exp => ({
+          title: exp.title,
+          name: exp.company,
+          start_year: parseInt(exp.startDate) || null,
+          end_year: exp.active ? null : (parseInt(exp.endDate) || null),
+          about: exp.description,
+          isPresent: exp.active
+        })),
+        // projects: editedProjects.map(proj => ({
+        //   title: proj.title,
+        //   description: proj.description,
+        //   name: proj.org,
+        //   location: proj.location
+        // })),
+        professional_skills: editedSkills,
+        services: editedServices.map(service => ({ title: service.title })),
+        location: localUserData?.location || "Gurugram, India",
+        sectors: editedSectors,
+        phone: editedPhone,
+        languages: editedLanguages
+      };
+
+      const res = await fetch(`/api-backend/users/${localUser.id}/profile`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localToken}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        console.log("Profile updated successfully");
+      } else {
+        console.error("Failed to update profile", await res.text());
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
   };
 
   const tabs = [
@@ -449,11 +629,15 @@ export default function ProfilePage() {
                 {editedProfilePic || user?.picture ? (
                   <img
                     src={editedProfilePic || user?.picture || ""}
-                    alt={user?.name || "Profile"}
+                    alt={user?.name || localUserData?.name || "Profile"}
                     className="object-cover w-full h-full"
                   />
                 ) : (
-                  <User className="h-16 w-16 text-gray-400" />
+                  <div className="flex items-center justify-center h-full w-full bg-[#E8F5E9] text-[#00B660]">
+                    <span className="text-6xl font-bold uppercase">
+                      {(editedName || user?.name || localUserData?.name || "U")[0]}
+                    </span>
+                  </div>
                 )}
                 
                 {/* Edit overlay */}
@@ -489,14 +673,15 @@ export default function ProfilePage() {
                       />
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0 self-end md:self-auto mb-2 md:mb-0">
-                      <Button size="sm" onClick={() => setIsEditing(false)} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                      <Button size="sm" onClick={() => { setIsEditing(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                       <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
                     </div>
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center gap-3">
-                      <h1 className="text-3xl font-bold text-[#191919]">{editedName || user?.name}</h1>
+                    <div className="flex items-center gap-3 flex-wrap w-full">
+                      <h1 className="text-3xl font-bold text-[#191919]">{editedName || user?.name || localUserData?.name}</h1>
+                      
                       <div className="relative group">
                         <button 
                           onClick={() => setIsEditing(true)}
@@ -509,6 +694,24 @@ export default function ProfilePage() {
                           <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
                         </div>
                       </div>
+
+                      {/* Profile Completion Bar */}
+                      {profileCompletion < 100 && (
+                        <div className="flex flex-col items-end gap-1.5 ml-auto mt-2 md:mt-0">
+                          <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
+                            <div className="w-24 h-2 bg-green-200 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-[#00B660] rounded-full transition-all duration-1000 ease-out" 
+                                style={{ width: `${profileCompletion}%` }}
+                              />
+                            </div>
+                            <span className="text-xs font-bold text-[#00B660]">{profileCompletion}%</span>
+                          </div>
+                          <p className="text-[11px] text-gray-500 font-medium pr-1">
+                            Complete your profile to stand out!
+                          </p>
+                        </div>
+                      )}
                     </div>
                     <p className="text-gray-500 font-medium mt-1">
                       {editedRole}
@@ -574,7 +777,7 @@ export default function ProfilePage() {
                           className="text-gray-600 leading-relaxed bg-white border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 w-full min-h-[80px]"
                         />
                         <div className="flex items-center gap-2">
-                          <Button size="sm" onClick={() => setIsEditingHeadline(false)} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                          <Button size="sm" onClick={() => { setIsEditingHeadline(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                           <Button size="sm" variant="outline" onClick={() => setIsEditingHeadline(false)}>Cancel</Button>
                         </div>
                       </div>
@@ -607,7 +810,7 @@ export default function ProfilePage() {
                           className="text-gray-500 leading-relaxed bg-white border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 w-full min-h-[150px]"
                         />
                         <div className="flex items-center gap-2">
-                          <Button size="sm" onClick={() => setIsEditingAbout(false)} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                          <Button size="sm" onClick={() => { setIsEditingAbout(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                           <Button size="sm" variant="outline" onClick={() => setIsEditingAbout(false)}>Cancel</Button>
                         </div>
                       </div>
@@ -706,7 +909,7 @@ export default function ProfilePage() {
                         </Button>
 
                         <div className="flex items-center gap-2 pt-2">
-                          <Button size="sm" onClick={() => setIsEditingEducation(false)} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                          <Button size="sm" onClick={() => { setIsEditingEducation(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                           <Button size="sm" variant="outline" onClick={() => setIsEditingEducation(false)}>Cancel</Button>
                         </div>
                       </div>
@@ -810,7 +1013,7 @@ export default function ProfilePage() {
                         </Button>
 
                         <div className="flex items-center gap-2 pt-2">
-                          <Button size="sm" onClick={() => setIsEditingCertifications(false)} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                          <Button size="sm" onClick={() => { setIsEditingCertifications(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                           <Button size="sm" variant="outline" onClick={() => setIsEditingCertifications(false)}>Cancel</Button>
                         </div>
                       </div>
@@ -956,7 +1159,7 @@ export default function ProfilePage() {
                         </Button>
 
                         <div className="flex items-center gap-2 pt-2">
-                          <Button size="sm" onClick={() => setIsEditingExperience(false)} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                          <Button size="sm" onClick={() => { setIsEditingExperience(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                           <Button size="sm" variant="outline" onClick={() => setIsEditingExperience(false)}>Cancel</Button>
                         </div>
                       </div>
@@ -1010,7 +1213,7 @@ export default function ProfilePage() {
                           className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm min-h-[150px]"
                         />
                         <div className="flex items-center gap-2 pt-2">
-                          <Button size="sm" onClick={() => setIsEditingSkillsIntro(false)} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                          <Button size="sm" onClick={() => { setIsEditingSkillsIntro(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                           <Button size="sm" variant="outline" onClick={() => setIsEditingSkillsIntro(false)}>Cancel</Button>
                         </div>
                       </div>
@@ -1084,7 +1287,7 @@ export default function ProfilePage() {
                           </Button>
                         </div>
                         <div className="flex items-center gap-2 pt-2">
-                          <Button size="sm" onClick={() => setIsEditingSkills(false)} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                          <Button size="sm" onClick={() => { setIsEditingSkills(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                           <Button size="sm" variant="outline" onClick={() => {
                             setIsEditingSkills(false);
                             setNewSkillInput("");
@@ -1174,7 +1377,7 @@ export default function ProfilePage() {
                           </Button>
                         </div>
                         <div className="flex items-center gap-2 pt-2">
-                          <Button size="sm" onClick={() => setIsEditingServices(false)} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                          <Button size="sm" onClick={() => { setIsEditingServices(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                           <Button size="sm" variant="outline" onClick={() => {
                             setIsEditingServices(false);
                             setNewServiceInput("");
@@ -1209,7 +1412,7 @@ export default function ProfilePage() {
                     <h3 className="text-xl font-bold text-[#191919]">Projects</h3>
                     {isEditingProjects ? (
                       <div className="flex gap-2">
-                        <Button size="sm" onClick={() => setIsEditingProjects(false)} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                        <Button size="sm" onClick={() => { setIsEditingProjects(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                         <Button size="sm" variant="outline" onClick={() => setIsEditingProjects(false)}>Cancel</Button>
                       </div>
                     ) : (
@@ -1435,7 +1638,7 @@ export default function ProfilePage() {
                         </Button>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Button size="sm" onClick={() => setIsEditingSectors(false)} className="h-auto py-1 px-2 text-xs bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                        <Button size="sm" onClick={() => { setIsEditingSectors(false); handleSaveProfile(); }} className="h-auto py-1 px-2 text-xs bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                         <Button size="sm" variant="outline" onClick={() => { setIsEditingSectors(false); setNewSectorInput(""); }} className="h-auto py-1 px-2 text-xs">Cancel</Button>
                       </div>
                     </div>
@@ -1516,7 +1719,7 @@ export default function ProfilePage() {
                         </Button>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Button size="sm" onClick={() => setIsEditingLanguage(false)} className="h-auto py-1 px-2 text-xs bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                        <Button size="sm" onClick={() => { setIsEditingLanguage(false); handleSaveProfile(); }} className="h-auto py-1 px-2 text-xs bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                         <Button size="sm" variant="outline" onClick={() => { setIsEditingLanguage(false); setNewLanguageInput(""); }} className="h-auto py-1 px-2 text-xs">Cancel</Button>
                       </div>
                     </div>
@@ -1542,7 +1745,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex-1">
                   <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Email Address</p>
-                  <p className="text-gray-900 font-bold">{user?.email || "tarunjajoria95@gmail.com"}</p>
+                  <p className="text-gray-900 font-bold">{user?.email || localUserData?.email || "N/A"}</p>
                 </div>
               </div>
 
@@ -1596,6 +1799,7 @@ export default function ProfilePage() {
                           } else {
                             setPhoneError("");
                             setIsEditingPhone(false);
+                            handleSaveProfile();
                           }
                         }} className="h-auto py-1 px-2 text-xs bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                         <Button size="sm" variant="outline" onClick={() => { setIsEditingPhone(false); setPhoneError(""); }} className="h-auto py-1 px-2 text-xs">Cancel</Button>

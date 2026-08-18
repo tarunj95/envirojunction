@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProfessionalCard } from "./components/professional-card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,125 +11,55 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, MapPin, X, Layers, SlidersHorizontal, RefreshCw } from "lucide-react";
+import { Search, MapPin, X, Layers, SlidersHorizontal, RefreshCw, Loader2 } from "lucide-react";
 import Link from "next/link";
-
-const mockProfessionals = [
-  {
-    id: "1",
-    name: "Ritika Sharma",
-    headline: "Product Designer",
-    location: "Chandigarh, India",
-    skills: ["Figma", "Adobe XD", "Application Design", "Remote"],
-    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80",
-    avatarHint: "female portrait",
-  },
-  {
-    id: "2",
-    name: "Rakesh Sharma",
-    headline: "Product Designer",
-    location: "Chandigarh, India",
-    skills: ["Figma", "Adobe XD", "Application Design", "Remote"],
-    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80",
-    avatarHint: "male portrait",
-  },
-  {
-    id: "3",
-    name: "Niharika Singh",
-    headline: "Product Designer",
-    location: "Chandigarh, India",
-    skills: ["Figma", "Adobe XD", "Application Design", "Remote"],
-    avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&h=150&q=80",
-    avatarHint: "female portrait",
-  },
-  {
-    id: "4",
-    name: "Naresh Singh",
-    headline: "Product Designer",
-    location: "Chandigarh, India",
-    skills: ["Figma", "Adobe XD", "Application Design", "Remote"],
-    avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&h=150&q=80",
-    avatarHint: "male portrait",
-  },
-  {
-    id: "5",
-    name: "Ritika Sharma",
-    headline: "Product Designer",
-    location: "Chandigarh, India",
-    skills: ["Figma", "Adobe XD", "Application Design", "Remote"],
-    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80",
-    avatarHint: "female portrait",
-  },
-  {
-    id: "6",
-    name: "Rakesh Sharma",
-    headline: "Product Designer",
-    location: "Chandigarh, India",
-    skills: ["Figma", "Adobe XD", "Application Design", "Remote"],
-    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80",
-    avatarHint: "male portrait",
-  },
-  {
-    id: "7",
-    name: "Niharika Singh",
-    headline: "Product Designer",
-    location: "Chandigarh, India",
-    skills: ["Figma", "Adobe XD", "Application Design", "Remote"],
-    avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&h=150&q=80",
-    avatarHint: "female portrait",
-  },
-  {
-    id: "8",
-    name: "Naresh Singh",
-    headline: "Product Designer",
-    location: "Chandigarh, India",
-    skills: ["Figma", "Adobe XD", "Application Design", "Remote"],
-    avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&h=150&q=80",
-    avatarHint: "male portrait",
-  },
-  {
-    id: "9",
-    name: "Ritika Sharma",
-    headline: "Product Designer",
-    location: "Chandigarh, India",
-    skills: ["Figma", "Adobe XD", "Application Design", "Remote"],
-    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80",
-    avatarHint: "female portrait",
-  },
-  {
-    id: "10",
-    name: "Rakesh Sharma",
-    headline: "Product Designer",
-    location: "Chandigarh, India",
-    skills: ["Figma", "Adobe XD", "Application Design", "Remote"],
-    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80",
-    avatarHint: "male portrait",
-  },
-  {
-    id: "11",
-    name: "Niharika Singh",
-    headline: "Product Designer",
-    location: "Chandigarh, India",
-    skills: ["Figma", "Adobe XD", "Application Design", "Remote"],
-    avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&h=150&q=80",
-    avatarHint: "female portrait",
-  },
-  {
-    id: "12",
-    name: "Naresh Singh",
-    headline: "Product Designer",
-    location: "Chandigarh, India",
-    skills: ["Figma", "Adobe XD", "Application Design", "Remote"],
-    avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&h=150&q=80",
-    avatarHint: "male portrait",
-  },
-];
+import api from "@/utils/api";
+import type { Professional } from "@/lib/types";
 
 export default function ProfessionalsPage() {
+  const [professionals, setProfessionals] = useState<Professional[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [location, setLocation] = useState("");
   const [showDesignFilter, setShowDesignFilter] = useState(true);
   const [showChandigarhFilter, setShowChandigarhFilter] = useState(true);
+
+  useEffect(() => {
+    const fetchProfessionals = async () => {
+      try {
+        const response = await api.get('/api/users');
+        // Handle different possible response structures
+        const data = Array.isArray(response.data) ? response.data : (response.data?.data || []);
+        
+        const mappedProfessionals: Professional[] = data.map((user: any) => {
+          // Construct name
+          let name = user.name;
+          if (!name && user.firstName) {
+            name = `${user.firstName} ${user.lastName || ''}`.trim();
+          }
+          if (!name) name = "Unknown User";
+
+          return {
+            id: user.id?.toString() || user._id?.toString() || Math.random().toString(),
+            name,
+            headline: user.headline || user.role || user.jobTitle || "Professional",
+            location: user.location || user.city || "Location not specified",
+            skills: user.skills || ["Professional"],
+            avatarUrl: user.avatarUrl || user.profilePicture || user.avatar || "",
+            avatarHint: "user portrait",
+          };
+        });
+        
+        setProfessionals(mappedProfessionals);
+      } catch (error) {
+        console.error("Error fetching professionals:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfessionals();
+  }, []);
 
   return (
     <div className="w-full px-4">
@@ -252,18 +182,31 @@ export default function ProfessionalsPage() {
       </div>
 
       {/* Professionals Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-        {mockProfessionals.map((prof) => (
-          <ProfessionalCard 
-            key={prof.id} 
-            professional={prof} 
-          />
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex justify-center items-center py-20">
+          <Loader2 className="h-8 w-8 text-[#315D40] animate-spin" />
+        </div>
+      ) : professionals.length === 0 ? (
+        <div className="text-center py-20 text-gray-500">
+          No professionals found.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          {professionals.map((prof) => (
+            <ProfessionalCard 
+              key={prof.id} 
+              professional={prof} 
+            />
+          ))}
+        </div>
+      )}
 
       {/* Bottom loading / Load More button */}
       <div className="flex justify-center mt-12 mb-8">
-        <button className="bg-[#315D40] hover:bg-[#19C26E] text-white px-6 py-2.5 rounded-full flex items-center gap-2 font-semibold text-sm tracking-wide transition-colors shadow-sm">
+        <button 
+          disabled
+          className="bg-[#315D40] hover:bg-[#19C26E] text-white px-6 py-2.5 rounded-full flex items-center gap-2 font-semibold text-sm tracking-wide transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           <RefreshCw className="h-3.5 w-3.5" />
           View More
         </button>

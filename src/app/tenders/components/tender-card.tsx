@@ -109,6 +109,7 @@ export function TenderCard({ tender, viewMode = "list" }: TenderCardProps) {
           {/* Right/Actions Box (Only in list view) */}
           {isList && (
             <div className="flex flex-row md:flex-col items-center justify-end gap-2 flex-shrink-0 w-full md:w-36 ml-auto mt-4 md:mt-0 pt-3 md:pt-0 border-t md:border-t-0 border-gray-100">
+{/*
               <Button 
                 onClick={handleRelevanceCheck} 
                 disabled={isPending}
@@ -125,6 +126,7 @@ export function TenderCard({ tender, viewMode = "list" }: TenderCardProps) {
                 )}
                 {isOpen ? "Hide Match" : "Check Match"}
               </Button>
+*/}
 
               <Button 
                 variant={isSaved ? "default" : "outline"}
@@ -144,6 +146,7 @@ export function TenderCard({ tender, viewMode = "list" }: TenderCardProps) {
         {/* Action Buttons (Only in grid view) */}
         {!isList && (
           <div className="flex gap-2 border-t border-gray-100 pt-4 mt-auto">
+{/*
             <Button 
               onClick={handleRelevanceCheck} 
               disabled={isPending}
@@ -160,6 +163,7 @@ export function TenderCard({ tender, viewMode = "list" }: TenderCardProps) {
               )}
               {isOpen ? "Hide Match" : "Check Match"}
             </Button>
+*/}
 
             <Button 
               variant={isSaved ? "default" : "outline"}
