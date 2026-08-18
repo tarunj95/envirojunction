@@ -2,7 +2,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image'; // Import the Image component
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,42 @@ import { Badge } from '@/components/ui/badge';
 export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    // target time: 18 Aug 2026 at 1 PM IST
+    const targetDate = new Date('2026-08-18T13:00:00+05:30').getTime();
+
+    const updateTimer = () => {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      if (distance < 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
+
+      setTimeLeft({
+        days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((distance % (1000 * 60)) / 1000)
+      });
+    };
+
+    updateTimer(); // Initial call
+    const interval = setInterval(updateTimer, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -55,50 +91,34 @@ export default function Home() {
               priority
             />
           </div>
+          
+          {/* Countdown Timer */}
+          {isMounted && (
+            <div className="flex gap-2 sm:gap-4 justify-center items-center mt-2 w-full">
+              <div className="flex flex-col items-center p-2 sm:p-3 bg-white/60 dark:bg-zinc-800/60 rounded-xl shadow-sm backdrop-blur-md min-w-[60px] sm:min-w-[70px] border border-primary/10">
+                <span className="text-2xl sm:text-3xl font-bold text-primary">{timeLeft.days}</span>
+                <span className="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-muted-foreground">Days</span>
+              </div>
+              <span className="text-xl sm:text-2xl font-bold text-primary/40 animate-pulse">:</span>
+              <div className="flex flex-col items-center p-2 sm:p-3 bg-white/60 dark:bg-zinc-800/60 rounded-xl shadow-sm backdrop-blur-md min-w-[60px] sm:min-w-[70px] border border-primary/10">
+                <span className="text-2xl sm:text-3xl font-bold text-primary">{timeLeft.hours.toString().padStart(2, '0')}</span>
+                <span className="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-muted-foreground">Hours</span>
+              </div>
+              <span className="text-xl sm:text-2xl font-bold text-primary/40 animate-pulse">:</span>
+              <div className="flex flex-col items-center p-2 sm:p-3 bg-white/60 dark:bg-zinc-800/60 rounded-xl shadow-sm backdrop-blur-md min-w-[60px] sm:min-w-[70px] border border-primary/10">
+                <span className="text-2xl sm:text-3xl font-bold text-primary">{timeLeft.minutes.toString().padStart(2, '0')}</span>
+                <span className="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-muted-foreground">Mins</span>
+              </div>
+              <span className="text-xl sm:text-2xl font-bold text-primary/40 animate-pulse">:</span>
+              <div className="flex flex-col items-center p-2 sm:p-3 bg-white/60 dark:bg-zinc-800/60 rounded-xl shadow-sm backdrop-blur-md min-w-[60px] sm:min-w-[70px] border border-primary/10">
+                <span className="text-2xl sm:text-3xl font-bold text-primary">{timeLeft.seconds.toString().padStart(2, '0')}</span>
+                <span className="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-muted-foreground">Secs</span>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Card below Logo */}
-        <Card className="border border-primary/10 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md shadow-xl text-left overflow-hidden relative">
-          <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-emerald-500 via-primary to-teal-500" />
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between mb-2">
-              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border-none font-semibold px-3 py-1">
-                COMING SOON
-              </Badge>
-              <Sparkles className="w-5 h-5 text-emerald-500 animate-pulse" />
-            </div>
-            <CardTitle className="text-3xl font-extrabold tracking-tight text-foreground">
-              Welcome to Enviro Junction
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <p className="text-muted-foreground text-base leading-relaxed">
-              Enviro Junction is an environmental intelligence platform that connects professionals, organizations, and communities through knowledge, opportunities, collaboration, and environmental solutions.
-            </p>
 
-            <div className="pt-2 border-t border-primary/5">
-              <p className="text-sm font-semibold uppercase tracking-wider text-primary mb-3">Our Four Pillars</p>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {['News', 'Opportunities', 'Tenders', 'Services'].map((pillar) => (
-                  <div key={pillar} className="flex items-center justify-center p-2 rounded-lg bg-primary/5 border border-primary/10 text-sm font-medium text-foreground hover:bg-primary/10 transition-colors duration-200">
-                    {pillar}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-primary/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h4 className="font-bold text-foreground">Join Our Waitlist</h4>
-                <p className="text-xs text-muted-foreground">Be the first to know when Enviro Junction launches.</p>
-              </div>
-              <div className="flex items-center gap-1.5 text-sm font-bold text-emerald-600 dark:text-emerald-400 animate-bounce sm:animate-none">
-                <span>👉 Join the Waitlist</span>
-                <ArrowDown className="w-4 h-4 hidden sm:inline" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Input form */}
         <form onSubmit={handleSubmit} className="space-y-3 bg-white/30 dark:bg-zinc-900/30 p-4 rounded-xl border border-primary/5 backdrop-blur-sm">
@@ -123,40 +143,6 @@ export default function Home() {
           </Button>
         </form>
 
-        {/* Card below Input Field */}
-        <Card className="border border-primary/10 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md shadow-xl text-left overflow-hidden relative">
-          <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-blue-500 via-indigo-500 to-primary" />
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between mb-1">
-              <Badge className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 border-none font-semibold px-3 py-1">
-                Featured Webinar
-              </Badge>
-            </div>
-            <CardTitle className="text-xl font-bold tracking-tight text-foreground leading-snug">
-              Natural Resource Conservation in a Changing World: From Ecosystems to Sustainable Development
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-primary/5 p-3 rounded-lg border border-primary/10 text-sm">
-              <div className="flex items-center gap-2 text-foreground font-medium">
-                <Calendar className="w-4 h-4 text-indigo-500 shrink-0" />
-                <span>28 July 2026</span>
-              </div>
-              <div className="flex items-center gap-2 text-foreground font-medium">
-                <Clock className="w-4 h-4 text-indigo-500 shrink-0" />
-                <span>11:00 AM (IST)</span>
-              </div>
-              <div className="flex items-center gap-2 text-foreground font-medium">
-                <Laptop className="w-4 h-4 text-indigo-500 shrink-0" />
-                <span>Online Webinar</span>
-              </div>
-            </div>
-
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Join leading experts from academia, industry, consulting, and international organizations as they discuss emerging challenges, innovations, and practical pathways for sustainable natural resource management.
-            </p>
-          </CardContent>
-        </Card>
 
         {/* Social Links */}
         <div className="flex justify-center space-x-6 pt-2">
