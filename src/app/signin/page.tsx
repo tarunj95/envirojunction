@@ -165,16 +165,6 @@ export default function SigninPage() {
     }
   };
 
-  const handleSsoClick = () => {
-    setIsLoading(true);
-    try {
-      handleDirectOAuth(undefined, '/auth/sso-callback');
-    } catch {
-      setIsLoading(false);
-      setShowSsoConfigDialog(true);
-    }
-  };
-
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -348,38 +338,9 @@ export default function SigninPage() {
 
             <Box sx={{ display: 'flex', alignItems: 'center', my: 0.5 }}>
               <Box sx={{ flex: 1, height: '1px', bgcolor: '#f0f0f0' }} />
-              <Typography sx={{ px: 2, color: '#999', fontSize: '0.85rem' }}>or sign in with</Typography>
+              <Typography sx={{ px: 2, color: '#999', fontSize: '0.85rem' }}>or</Typography>
               <Box sx={{ flex: 1, height: '1px', bgcolor: '#f0f0f0' }} />
             </Box>
-
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={handleSsoClick}
-              disabled={isLoading}
-              sx={{
-                borderColor: '#e5e7eb',
-                color: '#1f2937',
-                py: 1.4,
-                borderRadius: 2,
-                textTransform: 'none',
-                fontSize: '0.92rem',
-                fontWeight: 600,
-                bgcolor: '#f9fafb',
-                boxShadow: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 1.2,
-                '&:hover': {
-                  bgcolor: '#f3f4f6',
-                  borderColor: '#d1d5db',
-                }
-              }}
-            >
-              <LockPersonOutlinedIcon sx={{ fontSize: 20, color: '#1e6b52' }} />
-              Continue with Single Sign-On (SSO)
-            </Button>
 
             <Box
               sx={{
@@ -387,7 +348,7 @@ export default function SigninPage() {
                 justifyContent: 'center',
                 gap: 1.5,
                 width: '100%',
-                mt: 0.5
+                mt: 1
               }}
             >
               {[
