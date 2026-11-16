@@ -29,7 +29,6 @@ import api from "@/utils/api";
 import { handleSocialLogin, setAuthCookies } from "@/utils/auth";
 import { useToast } from "@/hooks/use-toast";
 import AuthLeftPanel from '../components/AuthLeftPanel';
-import { SocialAuthModal } from '@/components/auth/social-auth-modal';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -40,8 +39,6 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [socialModalOpen, setSocialModalOpen] = useState(false);
-  const [selectedSocialProvider, setSelectedSocialProvider] = useState('google');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -132,9 +129,32 @@ export default function SignupPage() {
     }
   }, [formik.submitCount]);
 
-  const handleSocialClick = (provider: string) => {
-    setSelectedSocialProvider(provider);
-    setSocialModalOpen(true);
+  const handleSocialClick = async (provider: string) => {
+    setIsLoading(true);
+    try {
+      await handleSocialLogin(provider, {
+        email: formik.values.email,
+        name: formik.values.name,
+        isSignUp: true,
+        onSuccess: (msg) => {
+          toast({
+            variant: "success",
+            title: "Sign Up Successful",
+            description: msg,
+          });
+        },
+        onError: (msg) => {
+          toast({
+            variant: "destructive",
+            title: "Social Sign Up Failed",
+            description: msg,
+          });
+          setIsLoading(false);
+        },
+      });
+    } catch {
+      setIsLoading(false);
+    }
   };
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -435,29 +455,6 @@ export default function SignupPage() {
           </Stack>
         </form>
       </Paper>
-
-      <SocialAuthModal
-        open={socialModalOpen}
-        onClose={() => setSocialModalOpen(false)}
-        provider={selectedSocialProvider}
-        isSignUp={true}
-        defaultEmail={formik.values.email}
-        defaultName={formik.values.name}
-        onSuccess={(msg) => {
-          toast({
-            variant: "success",
-            title: "Sign Up Successful",
-            description: msg,
-          });
-        }}
-        onError={(msg) => {
-          toast({
-            variant: "destructive",
-            title: "Social Sign Up Failed",
-            description: msg,
-          });
-        }}
-      />
     </Box>
   );
 }
