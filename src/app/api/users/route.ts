@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getBackendApiBaseUrl } from '@/utils/backend';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.envirojunction.com';
+    const apiBase = getBackendApiBaseUrl();
     const targetUrl = `${apiBase}/users`;
 
     const response = await fetch(targetUrl, {

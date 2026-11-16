@@ -2,7 +2,23 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import api from "@/utils/api";
+import { calculateProfileCompletion } from "@/utils/profile";
+import {
+  Lock,
+  CheckCircle2,
+  AlertCircle,
+  ArrowRight,
+  User,
+  Briefcase,
+  GraduationCap,
+  Sparkles,
+  Phone,
+  FileText,
+  BadgeCheck,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const FolderIcon = () => (
   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
@@ -56,6 +72,14 @@ const HiringIllustration = () => (
 );
 
 export default function Home() {
+  const router = useRouter();
+
+  // Profile completion gate state
+  const [checkingProfile, setCheckingProfile] = useState<boolean>(true);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [profileScore, setProfileScore] = useState<number>(0);
+
+  // Home page feed & UI state
   const [searchQuery, setSearchQuery] = useState("");
   const [showHiringModal, setShowHiringModal] = useState(false);
   const [hiringFormSubmitted, setHiringFormSubmitted] = useState(false);
@@ -79,6 +103,52 @@ export default function Home() {
   const [hasNextPage, setHasNextPage] = useState(true);
   const observerTarget = useRef<HTMLDivElement | null>(null);
 
+  // Step 1: Check authentication & calculate profile completion (> 70% requirement)
+  useEffect(() => {
+    const verifyProfileAccess = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const storedUserStr = localStorage.getItem("user");
+
+        if (!token && !storedUserStr) {
+          router.push("/signin");
+          return;
+        }
+
+        // Try local storage profile first for instant UI response
+        let initialProfile: any = null;
+        if (storedUserStr) {
+          try {
+            initialProfile = JSON.parse(storedUserStr);
+            const initialScore = calculateProfileCompletion(initialProfile);
+            setUserProfile(initialProfile);
+            setProfileScore(initialScore);
+          } catch (_) {}
+        }
+
+        // Fetch fresh profile data from backend to ensure accuracy
+        try {
+          const profileRes = await api.get("/users/profile");
+          const freshProfile = profileRes.data?.data || profileRes.data || initialProfile;
+          if (freshProfile) {
+            const calculated = calculateProfileCompletion(freshProfile);
+            setUserProfile(freshProfile);
+            setProfileScore(calculated);
+          }
+        } catch (apiErr) {
+          console.warn("Could not fetch remote profile, using local:", apiErr);
+        }
+      } catch (err) {
+        console.error("Profile check failed:", err);
+      } finally {
+        setCheckingProfile(false);
+      }
+    };
+
+    verifyProfileAccess();
+  }, [router]);
+
+  // Step 2: Fetch feed items when profile is verified to be > 70%
   const fetchPage = useCallback(async (targetPage: number) => {
     if (targetPage === 1) setLoading(true);
     else setLoadingMore(true);
@@ -131,8 +201,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    fetchPage(1);
-  }, [fetchPage]);
+    if (!checkingProfile && profileScore > 70) {
+      fetchPage(1);
+    }
+  }, [checkingProfile, profileScore, fetchPage]);
 
   const loadNextPage = useCallback(() => {
     if (!loading && !loadingMore && hasNextPage) {
@@ -284,6 +356,135 @@ export default function Home() {
     }, 2000);
   };
 
+  // CHECKING STATE SKELETON
+  if (checkingProfile) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 bg-slate-50">
+        <div className="w-10 h-10 border-3 border-[#315D40] border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sm font-semibold text-slate-600">Verifying profile access...</p>
+      </div>
+    );
+  }
+
+  // PROFILE INCOMPLETE GATE (Profile must be > 70% to view Home)
+  if (profileScore <= 70) {
+    const hasName = Boolean(userProfile?.name?.trim());
+    const hasTitle = Boolean((userProfile?.title || userProfile?.role)?.trim());
+    const hasHeadline = Boolean(userProfile?.headline?.trim());
+    const hasAbout = Boolean((userProfile?.about || userProfile?.bio)?.trim());
+    const hasPhone = Boolean(userProfile?.phone?.trim());
+    const skillsList = userProfile?.professional_skills || (Array.isArray(userProfile?.skills) ? userProfile?.skills : (userProfile?.skills ? [userProfile?.skills] : []));
+    const hasSkills = Boolean(Array.isArray(skillsList) && skillsList.length > 0);
+    const hasExps = Boolean(Array.isArray(userProfile?.work_experience || userProfile?.experiences) && (userProfile?.work_experience || userProfile?.experiences).length > 0);
+    const hasEdus = Boolean(Array.isArray(userProfile?.education || userProfile?.educations) && (userProfile?.education || userProfile?.educations).length > 0);
+
+    const checklist = [
+      { label: "Full Name", weight: 10, done: hasName, icon: User },
+      { label: "Job Title / Role", weight: 10, done: hasTitle, icon: Briefcase },
+      { label: "Professional Headline", weight: 15, done: hasHeadline, icon: BadgeCheck },
+      { label: "About / Bio Summary", weight: 15, done: hasAbout, icon: FileText },
+      { label: "Phone Number", weight: 10, done: hasPhone, icon: Phone },
+      { label: "Professional Skills", weight: 15, done: hasSkills, icon: Sparkles },
+      { label: "Work Experience", weight: 15, done: hasExps, icon: Briefcase },
+      { label: "Education & Degree", weight: 10, done: hasEdus, icon: GraduationCap },
+    ];
+
+    return (
+      <div className="min-h-screen bg-[#F8FAF9] flex items-center justify-center px-4 py-12">
+        <div className="max-w-xl w-full bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-10 shadow-sm space-y-6">
+          {/* Header */}
+          <div className="text-center space-y-2">
+            <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto border border-amber-200/60 shadow-2xs">
+              <Lock className="w-7 h-7" />
+            </div>
+            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+              Complete Profile to Unlock Home
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
+              To maintain an authentic and qualified sustainability network, you can access the Home stream once your profile is <strong>more than 70% complete</strong>.
+            </p>
+          </div>
+
+          {/* Progress Bar Card */}
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 space-y-3">
+            <div className="flex items-center justify-between text-xs font-bold">
+              <span className="text-slate-600 uppercase tracking-wider text-[11px]">Current Completion</span>
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold ${profileScore > 50 ? 'bg-amber-100 text-amber-800' : 'bg-slate-200 text-slate-700'}`}>
+                {profileScore}% / 100%
+              </span>
+            </div>
+
+            {/* Visual Bar */}
+            <div className="relative w-full h-3.5 bg-slate-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-amber-500 to-[#315D40] rounded-full transition-all duration-700 ease-out"
+                style={{ width: `${profileScore}%` }}
+              />
+              {/* 70% Goal Marker */}
+              <div
+                className="absolute top-0 bottom-0 w-0.5 bg-slate-900/60 z-10"
+                style={{ left: "70%" }}
+                title="70% Unlock Threshold"
+              />
+            </div>
+
+            <div className="flex justify-between items-center text-[11px] text-slate-400 font-medium pt-1">
+              <span>0%</span>
+              <span className="text-[#315D40] font-bold">🎯 70% Required to Unlock</span>
+              <span>100%</span>
+            </div>
+          </div>
+
+          {/* Checklist */}
+          <div className="space-y-2.5">
+            <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+              Profile Sections Checklist
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              {checklist.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={item.label}
+                    className={`flex items-center justify-between p-2.5 rounded-xl border transition-all ${
+                      item.done
+                        ? "bg-emerald-50/60 border-emerald-200 text-emerald-900"
+                        : "bg-white border-slate-200 text-slate-600"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <Icon className={`w-3.5 h-3.5 shrink-0 ${item.done ? "text-emerald-600" : "text-slate-400"}`} />
+                      <span className="truncate">{item.label}</span>
+                    </div>
+                    {item.done ? (
+                      <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 shrink-0">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> +{item.weight}%
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-medium text-slate-400 shrink-0">
+                        +{item.weight}%
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Action Button */}
+          <div className="pt-2">
+            <Link href="/profile" className="w-full block">
+              <Button className="w-full h-11 bg-[#315D40] hover:bg-[#254A32] text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer">
+                Complete Your Profile Now <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // PROFILE COMPLETE (> 70%): SHOW FULL HOME STREAM
   return (
     <div className="min-h-screen text-slate-900 font-sans selection:bg-emerald-100 selection:text-emerald-900 pb-20 bg-slate-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
@@ -295,7 +496,7 @@ export default function Home() {
                 <button
                   key={story.id}
                   onClick={() => launchStory(index)}
-                  className="relative w-32 sm:w-36 h-48 sm:h-56 rounded-2xl overflow-hidden group shrink-0 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 focus:outline-none bg-slate-900 cursor-pointer"
+                  className="relative w-32 sm:w-36 h-48 sm:h-56 rounded-2xl overflow-hidden group shrink-0 shadow-xs hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 focus:outline-none bg-slate-900 cursor-pointer"
                 >
                   <img
                     src={story.imageUrl}

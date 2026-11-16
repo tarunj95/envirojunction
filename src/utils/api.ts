@@ -1,13 +1,14 @@
 import axios, { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+import { getBackendApiBaseUrl } from './backend';
 
 // Create an Axios instance pointing to backend base URL
 const getBaseUrl = () => {
-  return process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.envirojunction.com';
+  return getBackendApiBaseUrl();
 };
 
 const api = axios.create({
   baseURL: getBaseUrl(),
-  timeout: 15000,
+  timeout: 20000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -34,9 +35,12 @@ async function getAccessToken(): Promise<string | null> {
     }
   } catch (_) {}
 
-  // 3. Try Auth0 session token
+  // 3. Try Auth0 session token with an explicit 1500ms timeout so it never blocks requests
   try {
-    const res = await fetch('/auth/me');
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 1500);
+    const res = await fetch('/auth/me', { signal: controller.signal });
+    clearTimeout(timer);
     if (!res.ok) return null;
     const session = await res.json();
     return session?.token?.accessToken ?? null;
@@ -67,9 +71,19 @@ api.interceptors.request.use(
       }
     }
 
-    const accessToken = await getAccessToken();
-    if (accessToken && config.headers) {
-      config.headers['Authorization'] = `Bearer ${accessToken}`;
+    // Skip attempting to read Auth0/JWT tokens for unauthenticated public routes
+    const isPublicAuthRoute =
+      config.url?.startsWith('/auth/login') ||
+      config.url?.startsWith('/auth/signup') ||
+      config.url?.startsWith('/auth/social-login') ||
+      config.url?.startsWith('/auth/social-signup') ||
+      config.url?.startsWith('/auth/forgot-password');
+
+    if (!isPublicAuthRoute) {
+      const accessToken = await getAccessToken();
+      if (accessToken && config.headers) {
+        config.headers['Authorization'] = `Bearer ${accessToken}`;
+      }
     }
 
     if (process.env.NODE_ENV !== 'production') {

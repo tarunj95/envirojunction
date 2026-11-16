@@ -23,26 +23,20 @@ export default function RootLayout({
     const isOnAuthPage = authRoutes.some(route => currentPath === route || currentPath.startsWith(`${route}/`));
     const isAuthHandler = currentPath.startsWith('/auth/') || currentPath.startsWith('/api/');
 
-    // Requirement: If user lands on "/" always route to "/signin"
-    if (isHomePage) {
-      window.location.href = '/signin';
-      return;
-    }
-
     try {
       const user = localStorage.getItem('user');
       const token = localStorage.getItem('token');
       const isAuthenticated = Boolean(user || token);
 
-      // If already logged in and visits auth page, route to profile
-      if (isOnAuthPage && isAuthenticated) {
-        window.location.href = '/profile';
+      // If user is logged out and lands on root "/" or protected route, route to /signin
+      if (!isAuthenticated && !isOnAuthPage && !isAuthHandler) {
+        window.location.href = '/signin';
         return;
       }
 
-      // Requirement: If user logged out don't show protected routes -> route to /signin
-      if (!isOnAuthPage && !isAuthHandler && !isAuthenticated) {
-        window.location.href = '/signin';
+      // If already logged in and visits auth page, route to profile
+      if (isOnAuthPage && isAuthenticated) {
+        window.location.href = '/profile';
         return;
       }
     } catch (e) {

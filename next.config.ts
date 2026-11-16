@@ -5,9 +5,18 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const rawApiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
+const apiBase =
+  !rawApiBase || rawApiBase.includes('52.64.114.139')
+    ? 'https://api.envirojunction.com'
+    : rawApiBase.replace(/\/+$/, '');
+
 const nextConfig: NextConfig = {
   /* config options here */
   outputFileTracingRoot: __dirname,
+  env: {
+    NEXT_PUBLIC_API_BASE_URL: apiBase,
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -15,7 +24,6 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   async rewrites() {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.envirojunction.com';
     return [
       {
         source: '/backend-news',

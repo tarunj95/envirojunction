@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getBackendApiBaseUrl } from '@/utils/backend';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest) {
   const category = searchParams.get('category');
   const search = searchParams.get('search');
 
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.envirojunction.com';
+  const apiBase = getBackendApiBaseUrl();
   const targetParams = new URLSearchParams({ page, limit });
   if (category && category !== 'all') targetParams.append('category', category);
   if (search) targetParams.append('search', search);

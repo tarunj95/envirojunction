@@ -480,10 +480,10 @@ export default function JobDetailPage({ params }: PageProps) {
               <a href="#" className="h-9 w-9 bg-[#315D40] text-white hover:bg-[#254A32] rounded-lg flex items-center justify-center transition-all shadow-sm">
                 <Twitter className="h-4.5 w-4.5 fill-current" />
               </a>
-              <a href="#" className="h-9 w-9 bg-gray-50 hover:bg-rose-50 hover:text-rose-600 text-gray-400 rounded-lg flex items-center justify-center transition-all">
+              <a href="https://www.instagram.com/envirojunction/" target="_blank" rel="noopener noreferrer" className="h-9 w-9 bg-gray-50 hover:bg-rose-50 hover:text-rose-600 text-gray-400 rounded-lg flex items-center justify-center transition-all" title="Instagram">
                 <Instagram className="h-4.5 w-4.5" />
               </a>
-              <a href="#" className="h-9 w-9 bg-gray-50 hover:bg-red-50 hover:text-red-600 text-gray-400 rounded-lg flex items-center justify-center transition-all">
+              <a href="https://www.youtube.com/@EnviroJunction" target="_blank" rel="noopener noreferrer" className="h-9 w-9 bg-gray-50 hover:bg-red-50 hover:text-red-600 text-gray-400 rounded-lg flex items-center justify-center transition-all" title="YouTube">
                 <Youtube className="h-4.5 w-4.5 fill-current" />
               </a>
             </div>

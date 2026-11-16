@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getBackendApiBaseUrl } from '@/utils/backend';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +12,7 @@ const CORS_HEADERS = {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.envirojunction.com';
+    const apiBase = getBackendApiBaseUrl();
     const targetUrl = `${apiBase}/auth/social-signup`;
 
     let response = await fetch(targetUrl, {

@@ -53,16 +53,16 @@ export function Footer() {
         <div>
           <h4 className="font-bold text-gray-900 mb-4 text-sm">Follow us</h4>
           <div className="flex gap-4">
-            <Link href="#" className="bg-gray-100 p-2 rounded-full text-gray-600 hover:bg-green-600 hover:text-white transition-colors">
+            <Link href="https://www.facebook.com/profile.php?id=61563821033008" target="_blank" rel="noopener noreferrer" className="bg-gray-100 p-2 rounded-full text-gray-600 hover:bg-green-600 hover:text-white transition-colors" title="Facebook">
               <Facebook className="h-5 w-5" />
             </Link>
-            <Link href="#" className="bg-gray-100 p-2 rounded-full text-gray-600 hover:bg-green-600 hover:text-white transition-colors">
+            <Link href="https://www.instagram.com/envirojunction/" target="_blank" rel="noopener noreferrer" className="bg-gray-100 p-2 rounded-full text-gray-600 hover:bg-green-600 hover:text-white transition-colors" title="Instagram">
               <Instagram className="h-5 w-5" />
             </Link>
-            <Link href="https://www.linkedin.com/company/enviro-junction/" target="_blank" className="bg-gray-100 p-2 rounded-full text-gray-600 hover:bg-green-600 hover:text-white transition-colors">
+            <Link href="https://www.linkedin.com/company/enviro-junction/" target="_blank" rel="noopener noreferrer" className="bg-gray-100 p-2 rounded-full text-gray-600 hover:bg-green-600 hover:text-white transition-colors" title="LinkedIn">
               <Linkedin className="h-5 w-5" />
             </Link>
-            <Link href="#" className="bg-gray-100 p-2 rounded-full text-gray-600 hover:bg-green-600 hover:text-white transition-colors">
+            <Link href="https://www.youtube.com/@EnviroJunction" target="_blank" rel="noopener noreferrer" className="bg-gray-100 p-2 rounded-full text-gray-600 hover:bg-green-600 hover:text-white transition-colors" title="YouTube">
               <Youtube className="h-5 w-5" />
             </Link>
           </div>
