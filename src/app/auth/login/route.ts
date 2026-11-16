@@ -1,7 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getBackendApiBaseUrl } from '@/utils/backend';
+import { auth0, isAuth0Configured } from '@/lib/auth0';
 
 export const dynamic = 'force-dynamic';
+
+export async function GET(request: NextRequest) {
+  if (isAuth0Configured) {
+    try {
+      return await auth0.middleware(request);
+    } catch (e) {
+      console.error('[Auth0 Login GET error]', e);
+    }
+  }
+
+  // If Auth0 is not configured or throws, redirect back to signin with status
+  const signinUrl = request.nextUrl.clone();
+  signinUrl.pathname = '/signin';
+  signinUrl.search = 'error=sso_not_configured';
+  return NextResponse.redirect(signinUrl);
+}
 
 export async function POST(request: NextRequest) {
   const origin = request.headers.get('origin') || '*';

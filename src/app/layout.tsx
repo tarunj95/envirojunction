@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
 import Script from 'next/script';
+import { Auth0Provider } from '@auth0/nextjs-auth0/client';
 
 export default function RootLayout({
   children,
@@ -27,7 +28,10 @@ export default function RootLayout({
     try {
       const user = localStorage.getItem('user');
       const token = localStorage.getItem('token');
-      const isAuthenticated = Boolean(user || token);
+      const hasAuthCookie = document.cookie.includes('token') || 
+                            document.cookie.includes('appSession') || 
+                            document.cookie.includes('user_exists');
+      const isAuthenticated = Boolean(user || token || hasAuthCookie);
 
       // If user is logged out and lands on root "/" or protected route, route to /signin
       if (!isAuthenticated && !isOnAuthPage && !isAuthHandler) {
@@ -36,7 +40,7 @@ export default function RootLayout({
       }
 
       // If already logged in and visits auth page, route to profile
-      if (isOnAuthPage && isAuthenticated) {
+      if (isOnAuthPage && (user || token)) {
         window.location.href = '/profile';
         return;
       }
@@ -54,15 +58,17 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Inter:wght@400;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        {isLinkedInPage || isAuthPage ? (
-          <div className="bg-background min-h-screen">
-            {children}
-          </div>
-        ) : (
-          <AppLayout>
-            {children}
-          </AppLayout>
-        )}
+        <Auth0Provider>
+          {isLinkedInPage || isAuthPage ? (
+            <div className="bg-background min-h-screen">
+              {children}
+            </div>
+          ) : (
+            <AppLayout>
+              {children}
+            </AppLayout>
+          )}
+        </Auth0Provider>
         <Toaster />
         <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" id="google-gsi-client" />
       </body>

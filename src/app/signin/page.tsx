@@ -21,14 +21,21 @@ import {
   Stack,
   useMediaQuery,
   useTheme,
-  FormHelperText
+  FormHelperText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert
 } from '@mui/material';
 import {
   Visibility,
   VisibilityOff
 } from '@mui/icons-material';
+import LockPersonOutlinedIcon from '@mui/icons-material/LockPersonOutlined';
+import CloseIcon from '@mui/icons-material/Close';
 import api from "@/utils/api";
-import { handleSocialLogin, setAuthCookies } from "@/utils/auth";
+import { handleSocialLogin, handleDirectOAuth, setAuthCookies } from "@/utils/auth";
 import { useToast } from "@/hooks/use-toast";
 import AuthLeftPanel from '../components/AuthLeftPanel';
 
@@ -40,6 +47,16 @@ export default function SigninPage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showSsoConfigDialog, setShowSsoConfigDialog] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('error') === 'sso_not_configured') {
+        setShowSsoConfigDialog(true);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -139,10 +156,22 @@ export default function SigninPage() {
             description: msg,
           });
           setIsLoading(false);
+          setShowSsoConfigDialog(true);
         },
       });
     } catch {
       setIsLoading(false);
+      setShowSsoConfigDialog(true);
+    }
+  };
+
+  const handleSsoClick = () => {
+    setIsLoading(true);
+    try {
+      handleDirectOAuth(undefined, '/auth/sso-callback');
+    } catch {
+      setIsLoading(false);
+      setShowSsoConfigDialog(true);
     }
   };
 
@@ -319,9 +348,38 @@ export default function SigninPage() {
 
             <Box sx={{ display: 'flex', alignItems: 'center', my: 0.5 }}>
               <Box sx={{ flex: 1, height: '1px', bgcolor: '#f0f0f0' }} />
-              <Typography sx={{ px: 2, color: '#999', fontSize: '0.85rem' }}>or</Typography>
+              <Typography sx={{ px: 2, color: '#999', fontSize: '0.85rem' }}>or sign in with</Typography>
               <Box sx={{ flex: 1, height: '1px', bgcolor: '#f0f0f0' }} />
             </Box>
+
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={handleSsoClick}
+              disabled={isLoading}
+              sx={{
+                borderColor: '#e5e7eb',
+                color: '#1f2937',
+                py: 1.4,
+                borderRadius: 2,
+                textTransform: 'none',
+                fontSize: '0.92rem',
+                fontWeight: 600,
+                bgcolor: '#f9fafb',
+                boxShadow: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 1.2,
+                '&:hover': {
+                  bgcolor: '#f3f4f6',
+                  borderColor: '#d1d5db',
+                }
+              }}
+            >
+              <LockPersonOutlinedIcon sx={{ fontSize: 20, color: '#1e6b52' }} />
+              Continue with Single Sign-On (SSO)
+            </Button>
 
             <Box
               sx={{
@@ -329,7 +387,7 @@ export default function SigninPage() {
                 justifyContent: 'center',
                 gap: 1.5,
                 width: '100%',
-                mt: 1
+                mt: 0.5
               }}
             >
               {[
@@ -392,6 +450,77 @@ export default function SigninPage() {
           </Stack>
         </form>
       </Paper>
+
+      {/* Single Sign-On (SSO) & OAuth Setup Guidance Dialog */}
+      <Dialog
+        open={showSsoConfigDialog}
+        onClose={() => setShowSsoConfigDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 3, p: 1 }
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <LockPersonOutlinedIcon sx={{ color: '#1e6b52' }} />
+            <Typography variant="h6" sx={{ fontWeight: 700, color: '#111827', fontSize: '1.1rem' }}>
+              OAuth Single Sign-On (SSO) Setup
+            </Typography>
+          </Box>
+          <IconButton onClick={() => setShowSsoConfigDialog(false)} size="small" aria-label="close">
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ pt: 1 }}>
+          <Typography variant="body2" sx={{ color: '#4b5563', mb: 2 }}>
+            To sign in using OAuth SSO (Google, LinkedIn, Facebook, Instagram), please configure your OAuth credentials in <code>.env.local</code>:
+          </Typography>
+
+          <Box sx={{ bgcolor: '#f8fafc', p: 2, borderRadius: 2, border: '1px solid #e2e8f0', mb: 2 }}>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: '#1e6b52', display: 'block', mb: 1, textTransform: 'uppercase' }}>
+              Option A: Auth0 Universal SSO (Google, LinkedIn, Facebook, Enterprise)
+            </Typography>
+            <Typography variant="body2" component="pre" sx={{ fontSize: '0.78rem', fontFamily: 'monospace', m: 0, color: '#0f172a', whiteSpace: 'pre-wrap' }}>
+{`AUTH0_DOMAIN=your-tenant.us.auth0.com
+AUTH0_CLIENT_ID=your_client_id
+AUTH0_CLIENT_SECRET=your_client_secret
+AUTH0_SECRET=generated_32_byte_secret
+APP_BASE_URL=http://localhost:9002`}
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 1 }}>
+              Allowed Callback URL: <code>http://localhost:9002/auth/callback</code>
+            </Typography>
+          </Box>
+
+          <Box sx={{ bgcolor: '#f8fafc', p: 2, borderRadius: 2, border: '1px solid #e2e8f0' }}>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: '#1e6b52', display: 'block', mb: 1, textTransform: 'uppercase' }}>
+              Option B: Direct Google OAuth 2.0 (GIS)
+            </Typography>
+            <Typography variant="body2" component="pre" sx={{ fontSize: '0.78rem', fontFamily: 'monospace', m: 0, color: '#0f172a', whiteSpace: 'pre-wrap' }}>
+{`NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_id.apps.googleusercontent.com`}
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 1 }}>
+              Authorized Origin: <code>http://localhost:9002</code>
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => setShowSsoConfigDialog(false)}
+            variant="contained"
+            sx={{
+              bgcolor: '#1e6b52',
+              textTransform: 'none',
+              fontWeight: 600,
+              boxShadow: 'none',
+              '&:hover': { bgcolor: '#154d3b', boxShadow: 'none' }
+            }}
+          >
+            Got It
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

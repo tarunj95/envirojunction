@@ -32,15 +32,24 @@ function isPublicPath(pathname: string): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // If Auth0 is not configured and a request hits an Auth0-specific route (except /auth/me or proxies), return notice
-  if (!isAuth0Configured && pathname.startsWith("/auth/") && !pathname.startsWith("/auth/login") && !pathname.startsWith("/auth/signup") && !pathname.startsWith("/auth/social-")) {
-    return NextResponse.json(
-      {
-        error: "Auth0 is not configured.",
-        message: "Please define AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, and AUTH0_SECRET in .env.local",
-      },
-      { status: 503 }
-    );
+  // If Auth0 is not configured and a request hits an Auth0-specific route, handle gracefully
+  if (!isAuth0Configured && pathname.startsWith("/auth/")) {
+    if (pathname === "/auth/login" || pathname === "/auth/logout" || pathname === "/auth/callback") {
+      const signinUrl = request.nextUrl.clone();
+      signinUrl.pathname = "/signin";
+      signinUrl.search = "error=sso_not_configured";
+      return NextResponse.redirect(signinUrl);
+    }
+
+    if (!pathname.startsWith("/auth/signup") && !pathname.startsWith("/auth/social-") && !pathname.startsWith("/auth/sso-callback")) {
+      return NextResponse.json(
+        {
+          error: "Auth0 is not configured.",
+          message: "Please define AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, and AUTH0_SECRET in .env.local",
+        },
+        { status: 503 }
+      );
+    }
   }
 
   // Run Auth0's own middleware (handles /auth/* & session cookie) when configured.
