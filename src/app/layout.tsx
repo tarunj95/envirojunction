@@ -6,6 +6,7 @@ import { AppLayout } from '@/components/layout/app-layout';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
+import Script from 'next/script';
 
 export default function RootLayout({
   children,
@@ -63,6 +64,7 @@ export default function RootLayout({
           </AppLayout>
         )}
         <Toaster />
+        <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" id="google-gsi-client" />
       </body>
     </html>
   );

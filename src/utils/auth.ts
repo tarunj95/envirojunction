@@ -1,5 +1,6 @@
 import api from './api';
 import { isAuth0Configured } from '@/lib/auth0';
+import { triggerGoogleOAuth } from './google-auth';
 
 export interface SocialAuthPayload {
   email: string;
@@ -79,8 +80,9 @@ export interface HandleSocialLoginOptions {
 
 /**
  * Handles social login/registration for Google, LinkedIn, Facebook, or Instagram.
- * If forceDirectOAuth is set, redirects directly to Auth0 OAuth provider.
- * Otherwise, completes authentic social sign-in via the backend API /auth/social-login.
+ * If provider is Google, uses Google Identity Services (GIS) to prompt the user
+ * with Google's official account selector, retrieving their real Google profile.
+ * Otherwise, uses the entered credentials or OAuth provider.
  */
 export const handleSocialLogin = async (
   provider: string,
@@ -94,10 +96,102 @@ export const handleSocialLogin = async (
     return;
   }
 
-  // Authenticate using backend social login/signup with user or provider details
+  // 1. Google OAuth Authentication flow
+  if (providerLower === 'google') {
+    const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.trim();
+
+    if (googleClientId) {
+      try {
+        const googleProfile = await triggerGoogleOAuth(googleClientId);
+
+        const payload: SocialAuthPayload = {
+          email: googleProfile.email,
+          name: googleProfile.name,
+          provider: 'google',
+          providerId: googleProfile.sub,
+          avatar: googleProfile.avatar,
+        };
+
+        const isSignUp = options?.isSignUp ?? false;
+        const data = isSignUp ? await socialSignUp(payload) : await socialLogin(payload);
+        const action = isSignUp ? 'Registered' : 'Signed in';
+        const successMsg = `${action} with Google as ${googleProfile.email} successfully!`;
+
+        if (options?.onSuccess) {
+          options.onSuccess(successMsg);
+        }
+
+        setTimeout(() => {
+          window.location.href = '/profile';
+        }, 500);
+
+        return data;
+      } catch (error: any) {
+        console.error('Google OAuth Error:', error);
+        const errMsg = error.message || 'Google sign-in was cancelled or failed.';
+        if (options?.onError) {
+          options.onError(errMsg);
+        }
+        throw error;
+      }
+    }
+
+    // If Google Client ID is not yet configured:
+    // If user provided their actual email in the form, use that
+    if (options?.email?.trim()) {
+      try {
+        const payload: SocialAuthPayload = {
+          email: options.email.trim(),
+          name: options?.name?.trim() || options.email.trim().split('@')[0],
+          provider: 'google',
+          avatar: options?.avatar,
+        };
+
+        const isSignUp = options?.isSignUp ?? false;
+        const data = isSignUp ? await socialSignUp(payload) : await socialLogin(payload);
+        const action = isSignUp ? 'Registered' : 'Signed in';
+        const successMsg = `${action} with Google as ${payload.email} successfully!`;
+
+        if (options?.onSuccess) {
+          options.onSuccess(successMsg);
+        }
+
+        setTimeout(() => {
+          window.location.href = '/profile';
+        }, 500);
+
+        return data;
+      } catch (error: any) {
+        console.error('Social login error:', error);
+        const errMsg = error.formattedMessage || 'Failed to authenticate. Please try again.';
+        if (options?.onError) {
+          options.onError(errMsg);
+        }
+        throw error;
+      }
+    }
+
+    // Google Client ID is not set and no email was typed
+    const missingConfigMsg =
+      'Google authentication requires NEXT_PUBLIC_GOOGLE_CLIENT_ID to be configured. Please set your Google OAuth Client ID in your environment (.env.local and AWS Amplify), or enter your email address to continue.';
+    if (options?.onError) {
+      options.onError(missingConfigMsg);
+    }
+    throw new Error(missingConfigMsg);
+  }
+
+  // 2. Other Social Providers (LinkedIn, Facebook, Instagram)
   try {
-    const email = options?.email?.trim() || `${providerLower}.user@envirojunction.com`;
-    const name = options?.name?.trim() || `${providerCapitalized} Member`;
+    const email = options?.email?.trim();
+    if (!email) {
+      const missingEmailMsg = `Please enter your email address in the field above to continue with ${providerCapitalized}.`;
+      if (options?.onError) {
+        options.onError(missingEmailMsg);
+      }
+      throw new Error(missingEmailMsg);
+    }
+
+    const name = options?.name?.trim() || email.split('@')[0];
     const avatar =
       options?.avatar ||
       `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200`;
@@ -124,7 +218,7 @@ export const handleSocialLogin = async (
     return data;
   } catch (error: any) {
     console.error('Social login error:', error);
-    const errMsg = error.formattedMessage || `Failed to authenticate with ${providerCapitalized}. Please try again.`;
+    const errMsg = error.formattedMessage || error.message || `Failed to authenticate with ${providerCapitalized}. Please try again.`;
     if (options?.onError) {
       options.onError(errMsg);
     }
