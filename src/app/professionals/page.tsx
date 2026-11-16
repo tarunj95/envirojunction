@@ -39,13 +39,30 @@ export default function ProfessionalsPage() {
           }
           if (!name) name = "Unknown User";
 
+          // Safely resolve skills array
+          let skillsArray: string[] = [];
+          if (Array.isArray(user.professional_skills) && user.professional_skills.length > 0) {
+            skillsArray = user.professional_skills;
+          } else if (Array.isArray(user.skills) && user.skills.length > 0) {
+            skillsArray = user.skills;
+          } else if (typeof user.skills === 'string' && user.skills.trim()) {
+            skillsArray = user.skills.split(',').map((s: string) => s.trim()).filter(Boolean);
+          } else if (Array.isArray(user.services) && user.services.length > 0) {
+            skillsArray = user.services.map((s: any) => typeof s === 'string' ? s : s.title).filter(Boolean);
+          }
+
+          if (skillsArray.length === 0) {
+            skillsArray = ["Environmental Specialist"];
+          }
+
           return {
             id: user.id?.toString() || user._id?.toString() || Math.random().toString(),
             name,
-            headline: user.headline || user.role || user.jobTitle || "Professional",
+            headline: user.headline || user.title || user.role || user.jobTitle || "Environmental Professional",
             location: user.location || user.city || "Location not specified",
-            skills: user.skills || ["Professional"],
-            avatarUrl: user.avatarUrl || user.profilePicture || user.avatar || "",
+            skills: skillsArray,
+            bio: user.about || user.headline || (typeof user.skills === 'string' ? user.skills : "Experienced environmental professional."),
+            avatarUrl: user.avatar || user.avatarUrl || user.profilePicture || "",
             avatarHint: "user portrait",
           };
         });

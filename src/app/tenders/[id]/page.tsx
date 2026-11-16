@@ -3,6 +3,7 @@
 import React, { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import api from "@/utils/api";
 import { tenders } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -54,10 +55,23 @@ export default function TenderDetailPage({ params }: PageProps) {
   useEffect(() => {
     const fetchTender = async () => {
       try {
-        const response = await fetch(`/api-backend/tenders?limit=100`);
-        const data = await response.json();
-        const found = data.data?.find((t: any) => t._id === id);
-        setTender(found);
+        let tenderData = null;
+        try {
+          const directRes = await api.get(`/tenders/${id}`);
+          if (directRes.data) {
+            tenderData = directRes.data;
+          }
+        } catch (_) {}
+
+        if (!tenderData) {
+          const response = await api.get('/tenders', {
+            params: { limit: 100 },
+          });
+          const data = response.data;
+          tenderData = data.data?.find((t: any) => t._id === id);
+        }
+
+        setTender(tenderData);
       } catch (error) {
         console.error("Error fetching tender:", error);
       } finally {

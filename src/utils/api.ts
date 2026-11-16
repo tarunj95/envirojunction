@@ -1,34 +1,40 @@
 import axios, { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 
-// Create an Axios instance
-// On client side (browser), use relative baseURL to proxy requests through Next.js API routes and avoid CORS errors.
+// Create an Axios instance pointing to backend base URL
 const getBaseUrl = () => {
-  if (typeof window !== 'undefined') {
-    return '';
-  }
-  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://52.64.114.139:3000';
+  return process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.envirojunction.com';
 };
 
 const api = axios.create({
   baseURL: getBaseUrl(),
-  timeout: 10000,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 /**
- * Fetches the current access token from localStorage or the /auth/me session endpoint.
+ * Fetches the current access token from localStorage, cookies, or the /auth/me session endpoint.
  * Returns null when the user is unauthenticated.
  */
 async function getAccessToken(): Promise<string | null> {
   if (typeof window === 'undefined') return null;
-  
+
   // 1. Try custom JWT token from localStorage
   const localToken = localStorage.getItem('token');
-  if (localToken) return localToken;
+  if (localToken && localToken.trim() !== '' && localToken !== 'undefined' && localToken !== 'null') {
+    return localToken;
+  }
 
-  // 2. Try Auth0 session token
+  // 2. Try token cookie
+  try {
+    const match = document.cookie.match(/(?:^|;\s*)token=([^;]*)/);
+    if (match && match[1] && match[1] !== 'undefined' && match[1] !== 'null') {
+      return decodeURIComponent(match[1]);
+    }
+  } catch (_) {}
+
+  // 3. Try Auth0 session token
   try {
     const res = await fetch('/auth/me');
     if (!res.ok) return null;
@@ -40,10 +46,27 @@ async function getAccessToken(): Promise<string | null> {
 }
 
 /**
- * Request Interceptor — Attaches Authorization Bearer token and logs outgoing request
+ * Request Interceptor — Attaches Authorization Bearer token, normalizes paths, and logs outgoing request
  */
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
+    // Normalize endpoint paths so both /api/... and standard backend paths succeed
+    if (config.url) {
+      if (config.url.startsWith('/api/auth/')) {
+        config.url = config.url.replace(/^\/api\/auth\//, '/auth/');
+      } else if (config.url.startsWith('/api/users')) {
+        config.url = config.url.replace(/^\/api\/users/, '/users');
+      } else if (config.url.startsWith('/api/jobs')) {
+        config.url = config.url.replace(/^\/api\/jobs/, '/jobs');
+      } else if (config.url.startsWith('/api/tenders')) {
+        config.url = config.url.replace(/^\/api\/tenders/, '/tenders');
+      } else if (config.url.startsWith('/api/news')) {
+        config.url = config.url.replace(/^\/api\/news/, '/news');
+      } else if (config.url.startsWith('/api-backend/')) {
+        config.url = config.url.replace(/^\/api-backend\//, '/');
+      }
+    }
+
     const accessToken = await getAccessToken();
     if (accessToken && config.headers) {
       config.headers['Authorization'] = `Bearer ${accessToken}`;
@@ -62,7 +85,7 @@ api.interceptors.request.use(
 );
 
 /**
- * Response Interceptor — Logs responses and standardizes error responses (including 400 Bad Request arrays)
+ * Response Interceptor — Logs responses, standardizes error responses, and handles 401 Unauthorized globally
  */
 api.interceptors.response.use(
   (response: AxiosResponse) => {
@@ -95,7 +118,22 @@ api.interceptors.response.use(
 
     // Global handling for 401 Unauthorized errors
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      // Optional token cleanup or redirect handling if required
+      const pathname = window.location.pathname;
+      const isAuthPage =
+        pathname === '/signin' ||
+        pathname === '/signup' ||
+        pathname === '/forgot-password' ||
+        pathname.startsWith('/signin/') ||
+        pathname.startsWith('/signup/');
+
+      if (!isAuthPage) {
+        // Clear invalid credentials and redirect to /signin
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0; SameSite=Lax';
+        document.cookie = 'user_exists=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0; SameSite=Lax';
+        window.location.href = '/signin';
+      }
     }
 
     return Promise.reject(error);

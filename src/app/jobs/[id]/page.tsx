@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Job } from "@/lib/types";
+import api from "@/utils/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -55,8 +56,10 @@ export default function JobDetailPage({ params }: PageProps) {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const response = await fetch('/api-backend/jobs?page=1&limit=50');
-        const result = await response.json();
+        const response = await api.get('/jobs', {
+          params: { page: 1, limit: 50 },
+        });
+        const result = response.data;
         if (result.data) {
           const mappedJobs = result.data.map((job: any) => ({
             id: job._id,

@@ -1,4 +1,5 @@
 import api from './api';
+import { isAuth0Configured } from '@/lib/auth0';
 
 export interface SocialAuthPayload {
   email: string;
@@ -38,53 +39,100 @@ const AUTH0_CONNECTIONS: Record<string, string> = {
 };
 
 /**
- * Redirects the user to Auth0's Universal Login for the specified social provider.
- * Auth0 handles the full OAuth flow (PKCE, token exchange, session) server-side.
- *
- * @param provider - One of: 'google' | 'linkedin' | 'facebook' | 'instagram'
+ * Sets auth cookies for middleware verification.
  */
-export const handleSocialLogin = (provider?: string) => {
-  const connection = provider ? AUTH0_CONNECTIONS[provider.toLowerCase()] : undefined;
-
-  let loginUrl = '/auth/login?returnTo=/profile';
-  if (connection) {
-    loginUrl += `&connection=${encodeURIComponent(connection)}`;
+export const setAuthCookies = (token?: string) => {
+  if (typeof document === 'undefined') return;
+  if (token) {
+    document.cookie = `token=${token}; path=/; max-age=2592000; SameSite=Lax`;
   }
-
-  window.location.href = loginUrl;
+  document.cookie = `user_exists=true; path=/; max-age=2592000; SameSite=Lax`;
 };
 
 /**
- * Sends social signup request to POST /api/auth/social-signup using Axios api client.
- * Stores received JWT token and user info in localStorage upon success.
+ * Handles social login for Google, LinkedIn, Facebook, or Instagram.
+ * If Auth0 is configured with credentials, redirects to Auth0.
+ * Otherwise, completes social login via the backend API / mock fallback.
+ */
+export const handleSocialLogin = async (
+  provider: string,
+  options?: {
+    onSuccess?: (message: string) => void;
+    onError?: (message: string) => void;
+  }
+) => {
+  const providerLower = (provider || 'google').toLowerCase();
+
+  // If Auth0 credentials are provided, use Auth0 universal login
+  if (isAuth0Configured) {
+    const connection = AUTH0_CONNECTIONS[providerLower];
+    let loginUrl = '/auth/login?returnTo=/profile';
+    if (connection) {
+      loginUrl += `&connection=${encodeURIComponent(connection)}`;
+    }
+    window.location.href = loginUrl;
+    return;
+  }
+
+  // Otherwise authenticate using backend social login
+  try {
+    const providerCapitalized = provider.charAt(0).toUpperCase() + provider.slice(1);
+    const mockEmail = `${providerLower}.user@envirojunction.com`;
+    const mockName = `${providerCapitalized} Member`;
+
+    const payload: SocialAuthPayload = {
+      email: mockEmail,
+      name: mockName,
+      provider: providerLower,
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
+    };
+
+    const data = await socialLogin(payload);
+    const successMsg = `Signed in with ${providerCapitalized} successfully!`;
+    if (options?.onSuccess) {
+      options.onSuccess(successMsg);
+    }
+    setTimeout(() => {
+      window.location.href = '/profile';
+    }, 500);
+  } catch (error: any) {
+    console.error('Social login error:', error);
+    const errMsg = error.formattedMessage || `Failed to sign in with ${provider}. Please try again.`;
+    if (options?.onError) {
+      options.onError(errMsg);
+    }
+  }
+};
+
+/**
+ * Sends social signup request to /auth/social-signup or fallback route.
+ * Stores received JWT token and user info in localStorage and cookies upon success.
  */
 export const socialSignUp = async (payload: SocialAuthPayload): Promise<AuthResponse> => {
-  const response = await api.post<AuthResponse>('/api/auth/social-signup', payload);
+  const response = await api.post<AuthResponse>('/auth/social-signup', payload);
   const { token, user } = response.data;
 
-  if (token && typeof window !== 'undefined') {
-    localStorage.setItem('token', token);
-  }
-  if (user && typeof window !== 'undefined') {
-    localStorage.setItem('user', JSON.stringify(user));
+  if (typeof window !== 'undefined') {
+    if (token) localStorage.setItem('token', token);
+    if (user) localStorage.setItem('user', JSON.stringify(user));
+    setAuthCookies(token);
   }
 
   return response.data;
 };
 
 /**
- * Sends social login request to POST /api/auth/social-login using Axios api client.
- * Stores received JWT token and user info in localStorage upon success.
+ * Sends social login request to /auth/social-login or fallback route.
+ * Stores received JWT token and user info in localStorage and cookies upon success.
  */
 export const socialLogin = async (payload: SocialAuthPayload): Promise<AuthResponse> => {
-  const response = await api.post<AuthResponse>('/api/auth/social-login', payload);
+  const response = await api.post<AuthResponse>('/auth/social-login', payload);
   const { token, user } = response.data;
 
-  if (token && typeof window !== 'undefined') {
-    localStorage.setItem('token', token);
-  }
-  if (user && typeof window !== 'undefined') {
-    localStorage.setItem('user', JSON.stringify(user));
+  if (typeof window !== 'undefined') {
+    if (token) localStorage.setItem('token', token);
+    if (user) localStorage.setItem('user', JSON.stringify(user));
+    setAuthCookies(token);
   }
 
   return response.data;
@@ -124,20 +172,26 @@ export const syncSocialUserWithBackend = async (auth0User: any): Promise<AuthRes
 };
 
 /**
- * Redirects the user to Auth0's logout route.
- * This will clear the local Next.js session and redirect to the Auth0 logout URL
- * to clear the Auth0 session, then return to the configured returnTo URL (usually /).
+ * Clears local storage, cookies, and redirects the user to /signin.
  */
 export const handleLogout = () => {
-  // Clear all local browser storage to ensure a clean state
-  localStorage.clear();
-  sessionStorage.clear();
+  if (typeof window !== 'undefined') {
+    // Clear all local browser storage to ensure a clean state
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.clear();
+    sessionStorage.clear();
 
-  // Clear custom cookies
-  document.cookie = 'token=; path=/; max-age=0';
-  document.cookie = 'user_exists=; path=/; max-age=0';
+    // Expire custom cookies with path /
+    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0; SameSite=Lax';
+    document.cookie = 'user_exists=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0; SameSite=Lax';
 
-  // Redirect to Auth0 logout to clear server-side session
-  window.location.href = '/auth/logout';
+    // If Auth0 is configured, logout from Auth0
+    if (isAuth0Configured) {
+      window.location.href = '/auth/logout?returnTo=/signin';
+    } else {
+      window.location.href = '/signin';
+    }
+  }
 };
 

@@ -44,6 +44,7 @@ export type Professional = {
   skills: string[];
   avatarUrl: string;
   avatarHint: string;
+  bio?: string;
 };
 
 export type FreelanceProject = {

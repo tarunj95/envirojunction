@@ -1,4 +1,4 @@
-import { auth0 } from "@/lib/auth0";
+import { auth0, isAuth0Configured } from "@/lib/auth0";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
@@ -8,17 +8,15 @@ import { NextResponse, type NextRequest } from "next/server";
 const PUBLIC_PATHS = ["/signup", "/signin", "/forgot-password"];
 
 /**
- * Returns true when the request path starts with one of the given prefixes.
+ * Returns true when the request path starts with one of the given prefixes or matches a public asset.
  */
 function isPublicPath(pathname: string): boolean {
-  // Auth0 SDK handles its own /auth/* routes — always allow them through.
+  // Auth and API routes
   if (pathname.startsWith("/auth/")) return true;
   if (pathname.startsWith("/api/")) return true;
-  if (pathname.startsWith("/news")) return true;
-  if (pathname.startsWith("/backend-news")) return true;
 
-  // Allow static images and assets
-  if (/\.(jpg|jpeg|png|svg|gif|webp|ico)$/i.test(pathname)) return true;
+  // Allow static images and media assets
+  if (/\.(jpg|jpeg|png|svg|gif|webp|ico|woff|woff2|ttf|eot)$/i.test(pathname)) return true;
 
   return PUBLIC_PATHS.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`)
@@ -26,29 +24,48 @@ function isPublicPath(pathname: string): boolean {
 }
 
 /**
- * Auth0 middleware — runs on every request to:
- *  1. Let the Auth0 SDK refresh the session rolling window.
- *  2. Redirect unauthenticated users to /signin for protected routes.
- *
- * The matcher below excludes static assets and Next.js internals.
+ * Middleware:
+ *  1. If user lands on "/" -> always redirect to "/signin".
+ *  2. If user is logged out -> protect all non-public routes and redirect to "/signin".
+ *  3. Handle Auth0 session refreshes if configured.
  */
 export async function middleware(request: NextRequest) {
-  // Always run Auth0's own middleware first (handles /auth/* & session cookie).
-  const auth0Response = await auth0.middleware(request);
-
   const { pathname } = request.nextUrl;
+
+  // If Auth0 is not configured and a request hits an Auth0-specific route (except /auth/me or proxies), return notice
+  if (!isAuth0Configured && pathname.startsWith("/auth/") && !pathname.startsWith("/auth/login") && !pathname.startsWith("/auth/signup") && !pathname.startsWith("/auth/social-")) {
+    return NextResponse.json(
+      {
+        error: "Auth0 is not configured.",
+        message: "Please define AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, and AUTH0_SECRET in .env.local",
+      },
+      { status: 503 }
+    );
+  }
+
+  // Run Auth0's own middleware (handles /auth/* & session cookie) when configured.
+  const auth0Response = isAuth0Configured
+    ? await auth0.middleware(request)
+    : NextResponse.next();
 
   // Public routes — no session required.
   if (isPublicPath(pathname)) {
     return auth0Response;
   }
 
-  // Check for an active Auth0 session.
-  const session = await auth0.getSession(request);
-  const hasCustomToken = request.cookies.has("token") || request.cookies.has("user_exists");
+  // Check for an active session or custom token.
+  const session = isAuth0Configured ? await auth0.getSession(request) : null;
+  const tokenCookie = request.cookies.get("token")?.value;
+  const userExistsCookie = request.cookies.get("user_exists")?.value;
+  const hasCustomToken = Boolean(
+    (tokenCookie && tokenCookie.trim() !== "" && tokenCookie !== "undefined" && tokenCookie !== "null") ||
+    (userExistsCookie && userExistsCookie === "true")
+  );
 
-  if (!session && !hasCustomToken) {
-    // No session — redirect to /signin, preserving the intended destination.
+  const isAuthenticated = Boolean(session || hasCustomToken);
+
+  // If user is logged out (including landing on root "/" while logged out), redirect to /signin
+  if (!isAuthenticated) {
     const signinUrl = request.nextUrl.clone();
     signinUrl.pathname = "/signin";
     signinUrl.search = "";

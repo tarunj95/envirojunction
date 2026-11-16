@@ -17,41 +17,38 @@ export default function RootLayout({
   const isAuthPage = pathname === '/signup' || pathname === '/signin' || pathname === '/forgot-password';
 
   useEffect(() => {
-    // Auth0 SDK handles token exchange and session at /auth/callback automatically.
-    // The session is stored in an HttpOnly cookie managed by Auth0's route handler.
     const authRoutes = ['/signin', '/signup', '/forgot-password'];
     const currentPath = window.location.pathname;
-    const isOnAuthPage = authRoutes.some(route => currentPath.startsWith(route));
     const isHomePage = currentPath === '/';
+    const isOnAuthPage = authRoutes.some(route => currentPath === route || currentPath.startsWith(`${route}/`));
+    const isAuthHandler = currentPath.startsWith('/auth/') || currentPath.startsWith('/api/');
 
-    if (isOnAuthPage || isHomePage) {
-      // Check for user/token in local storage
-      try {
-        const user = localStorage.getItem('user');
-        const token = localStorage.getItem('token');
-        if (user || token) {
-          window.location.href = '/profile';
-          return;
-        }
-      } catch (e) {
-        console.error('Error reading from localStorage', e);
-      }
-
-      // Fallback check Auth0 session via /auth/me endpoint for auth pages
-      if (isOnAuthPage) {
-        fetch('/auth/me')
-          .then(res => {
-            if (res.ok) {
-              // User is already logged in — send them to the profile page
-              window.location.href = '/profile';
-            }
-          })
-          .catch(() => {
-            // Not authenticated — stay on the auth page
-          });
-      }
+    // Requirement: If user lands on "/" always route to "/signin"
+    if (isHomePage) {
+      window.location.href = '/signin';
+      return;
     }
-  }, []);
+
+    try {
+      const user = localStorage.getItem('user');
+      const token = localStorage.getItem('token');
+      const isAuthenticated = Boolean(user || token);
+
+      // If already logged in and visits auth page, route to profile
+      if (isOnAuthPage && isAuthenticated) {
+        window.location.href = '/profile';
+        return;
+      }
+
+      // Requirement: If user logged out don't show protected routes -> route to /signin
+      if (!isOnAuthPage && !isAuthHandler && !isAuthenticated) {
+        window.location.href = '/signin';
+        return;
+      }
+    } catch (e) {
+      console.error('Error checking authentication state', e);
+    }
+  }, [pathname]);
 
 
   return (

@@ -40,6 +40,8 @@ import {
   Pencil
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import api from "@/utils/api";
+import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import banner from "../../../public/profile-bg.png"
@@ -51,117 +53,66 @@ import Grid from '@mui/material/Grid';
 import Typography, { TypographyProps } from '@mui/material/Typography';
 
 export default function ProfilePage() {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("Short bio");
   const { user, isLoading } = useUser();
-  const [revealedEmail, setRevealedEmail] = useState(false);
-  const [revealedPhone, setRevealedPhone] = useState(false);
-  const [isSparklingEmail, setIsSparklingEmail] = useState(false);
-  const [isSparklingPhone, setIsSparklingPhone] = useState(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [localUserData, setLocalUserData] = useState<any>(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState("");
-  const [editedRole, setEditedRole] = useState("UI/UX Expert , Front End , Environment Activist");
+  const [editedRole, setEditedRole] = useState("");
 
   const [isEditingHeadline, setIsEditingHeadline] = useState(false);
-  const [editedHeadline, setEditedHeadline] = useState("Environmental management expert having 20+ years of experience in the waste management industry with exposure in the indian region.");
+  const [editedHeadline, setEditedHeadline] = useState("");
 
   const [isEditingAbout, setIsEditingAbout] = useState(false);
-  const [editedAbout, setEditedAbout] = useState("Hey there! Is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.");
+  const [editedAbout, setEditedAbout] = useState("");
 
   const [isEditingEducation, setIsEditingEducation] = useState(false);
-  const [editedEducations, setEditedEducations] = useState([
-    { id: 1, title: "Master of Design", university: "Stanford University", years: "2012 - 2014" },
-    { id: 2, title: "Bachelor of Graphic Design", university: "University of California", years: "2008 - 2012" }
-  ]);
+  const [editedEducations, setEditedEducations] = useState<
+    { id: string | number; title: string; university: string; years: string }[]
+  >([]);
 
   const [isEditingCertifications, setIsEditingCertifications] = useState(false);
-  const [editedCertifications, setEditedCertifications] = useState([
-    { id: 1, title: "Adobe Photoshop", issuer: "Adobe", years: "2012 - 2019" },
-    { id: 2, title: "Adobe Illustrations", issuer: "Adobe", years: "2008 - 2020" }
-  ]);
+  const [editedCertifications, setEditedCertifications] = useState<
+    { id: string | number; title: string; issuer: string; years: string }[]
+  >([]);
 
   const [isEditingExperience, setIsEditingExperience] = useState(false);
-  const [editedExperiences, setEditedExperiences] = useState([
+  const [editedExperiences, setEditedExperiences] = useState<
     {
-      id: 1,
-      title: "Senior Product Designer",
-      company: "Facebook Inc.",
-      startDate: "2019",
-      endDate: "2021",
-      description: "Created and maintained design systems. Conducted user research and usability testing to improve product experiences.",
-      active: true,
-    },
-    {
-      id: 2,
-      title: "UI/UX Designer",
-      company: "Google LLC",
-      startDate: "2016",
-      endDate: "2019",
-      description: "Designed user interfaces for web and mobile applications. Collaborated with development teams to ensure design implementation.",
-      active: false,
-    },
-    {
-      id: 3,
-      title: "Junior Designer",
-      company: "Microsoft Corp",
-      startDate: "2014",
-      endDate: "2016",
-      description: "Assisted senior designers in creating marketing materials and product designs.",
-      active: false,
-    },
-  ]);
+      id: string | number;
+      title: string;
+      company: string;
+      startDate: string;
+      endDate: string;
+      description: string;
+      active: boolean;
+    }[]
+  >([]);
 
   const [isEditingSkills, setIsEditingSkills] = useState(false);
-  const [editedSkills, setEditedSkills] = useState([
-    "Project Management",
-    "Copywriting",
-    "English",
-    "UI/UX Design",
-    "Figma",
-    "Adobe Photoshop",
-    "Graphic Design",
-    "Brand Strategy",
-    "User Research",
-    "Prototyping",
-    "Typography",
-    "Motion Design",
-    "Agile",
-    "Design Systems",
-    "Illustration",
-  ]);
+  const [editedSkills, setEditedSkills] = useState<string[]>([]);
   const [newSkillInput, setNewSkillInput] = useState("");
 
   const [isEditingServices, setIsEditingServices] = useState(false);
-  const [editedServices, setEditedServices] = useState([
-    { id: 1, title: "Waste Management Consulting", icon: <Recycle className="h-4 w-4" /> },
-    { id: 2, title: "Environmental Impact Assessment (EIA)", icon: <ClipboardList className="h-4 w-4" /> },
-    { id: 3, title: "Sustainability Strategy Development", icon: <Lightbulb className="h-4 w-4" /> },
-    { id: 4, title: "Solar Power System Design", icon: <Sun className="h-4 w-4" /> },
-    { id: 5, title: "Wastewater Treatment Solutions", icon: <Droplets className="h-4 w-4" /> },
-    { id: 6, title: "Carbon Auditing & Offsetting", icon: <Cloud className="h-4 w-4" /> },
-    { id: 7, title: "Green Building Certification (LEED)", icon: <Building2 className="h-4 w-4" /> },
-    { id: 8, title: "Circular Economy Implementation", icon: <RefreshCw className="h-4 w-4" /> },
-    { id: 9, title: "Hazardous Material Management", icon: <ShieldAlert className="h-4 w-4" /> },
-    { id: 10, title: "Biodiversity Conservation Planning", icon: <TreePine className="h-4 w-4" /> },
-    { id: 11, title: "Renewable Energy Feasibility Studies", icon: <Zap className="h-4 w-4" /> },
-    { id: 12, title: "Ambient Air Quality Monitoring", icon: <Wind className="h-4 w-4" /> },
-    { id: 13, title: "Climate Change Adaptation Planning", icon: <Globe className="h-4 w-4" /> },
-    { id: 14, title: "Ecological Restoration Services", icon: <Sprout className="h-4 w-4" /> },
-    { id: 15, title: "ESG Reporting & Compliance", icon: <BarChart3 className="h-4 w-4" /> },
-  ]);
+  const [editedServices, setEditedServices] = useState<
+    { id: string | number; title: string; icon: React.ReactNode }[]
+  >([]);
   const [newServiceInput, setNewServiceInput] = useState("");
 
   const [isEditingLanguage, setIsEditingLanguage] = useState(false);
-  const [editedLanguages, setEditedLanguages] = useState(["English", "Hindi", "Spanish"]);
+  const [editedLanguages, setEditedLanguages] = useState<string[]>([]);
   const [newLanguageInput, setNewLanguageInput] = useState("");
 
   const [isEditingSectors, setIsEditingSectors] = useState(false);
-  const [editedSectors, setEditedSectors] = useState(["IT", "Agriculture"]);
+  const [editedSectors, setEditedSectors] = useState<string[]>([]);
   const [newSectorInput, setNewSectorInput] = useState("");
 
   const [isEditingPhone, setIsEditingPhone] = useState(false);
-  const [editedPhone, setEditedPhone] = useState("+91 98765 43210");
+  const [editedPhone, setEditedPhone] = useState("");
   const [phoneError, setPhoneError] = useState("");
 
   const [editedProfilePic, setEditedProfilePic] = useState<string | null>(null);
@@ -171,6 +122,12 @@ export default function ProfilePage() {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+
+  const [isEditingProjects, setIsEditingProjects] = useState(false);
+  const [editedProjects, setEditedProjects] = useState<any[]>([]);
+
+  const [isEditingSkillsIntro, setIsEditingSkillsIntro] = useState(false);
+  const [editedSkillsIntro, setEditedSkillsIntro] = useState("");
 
   const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -189,186 +146,127 @@ export default function ProfilePage() {
     setCroppedAreaPixels(croppedAreaPixels);
   };
 
-  const handleSaveCrop = async () => {
-    try {
-      const croppedImage = await getCroppedImg(imageToCrop as string, croppedAreaPixels as any, 0);
-      setEditedProfilePic(croppedImage);
-      setImageToCrop(null);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
   const handleCancelCrop = () => {
     setImageToCrop(null);
   };
 
-  const [isEditingProjects, setIsEditingProjects] = useState(false);
-  const [editedProjects, setEditedProjects] = useState([
-    {
-      id: 1,
-      icon: <Leaf className="h-6 w-6 text-white" />,
-      iconBg: "bg-green-500",
-      org: "EnviroJunction",
-      location: "New Delhi, IN",
-      tags: "Sustainability, GIS",
-      title: "Smart Waste Collection Network",
-      type: "Full time",
-      time: "2 months ago",
-      description: "Designed and deployed an IoT-based waste bin monitoring system across 50+ urban zones, reducing collection costs by 35% through real-time route optimisation.",
-      status: "Done",
-    },
-    {
-      id: 2,
-      icon: <Recycle className="h-6 w-6 text-white" />,
-      iconBg: "bg-blue-500",
-      org: "GreenCycle Org",
-      location: "Mumbai, IN",
-      tags: "Circular Economy, Policy",
-      title: "Plastic Waste Reduction Campaign",
-      type: "Contract",
-      time: "5 months ago",
-      description: "Led a city-wide initiative to divert 200+ tonnes of plastic waste annually through community recycling drives, corporate partnerships, and policy advocacy.",
-      status: "Done",
-    },
-    {
-      id: 3,
-      icon: <Droplets className="h-6 w-6 text-white" />,
-      iconBg: "bg-cyan-500",
-      org: "AquaEarth Foundation",
-      location: "Chennai, IN",
-      tags: "Water Mgmt, NGO",
-      title: "Wastewater Treatment & Reuse System",
-      type: "Full time",
-      time: "8 months ago",
-      description: "Implemented a decentralised wastewater treatment plant serving 10,000 households, achieving 80% water reuse for agricultural purposes in drought-prone areas.",
-      status: "Done",
-    },
-    {
-      id: 4,
-      icon: <Wind className="h-6 w-6 text-white" />,
-      iconBg: "bg-purple-500",
-      org: "CleanAir Collective",
-      location: "Bengaluru, IN",
-      tags: "Air Quality, Analytics",
-      title: "Industrial Emission Monitoring Dashboard",
-      type: "Part time",
-      time: "1 year ago",
-      description: "Built a real-time air quality analytics platform integrating 120+ sensors across industrial corridors, enabling regulatory compliance reporting and public transparency.",
-      status: "Done",
-    },
-    {
-      id: 5,
-      icon: <Sun className="h-6 w-6 text-white" />,
-      iconBg: "bg-orange-400",
-      org: "SolarSweep Ventures",
-      location: "Jaipur, IN",
-      tags: "Renewable Energy, Waste-to-Energy",
-      title: "Solar-Powered Composting Facility",
-      type: "Contract",
-      time: "1.5 years ago",
-      description: "Developed an off-grid composting facility powered entirely by solar energy, converting 5 tonnes of organic municipal waste per day into fertiliser for local farms.",
-      status: "Done",
-    },
-  ]);
-
-  const [isEditingSkillsIntro, setIsEditingSkillsIntro] = useState(false);
-  const [editedSkillsIntro, setEditedSkillsIntro] = useState(
-    "Hello there! My name is Alan Walker. I am a graphic designer, and I'm very passionate and dedicated to my work. With 20 years experience as a professional a graphic designer, I have acquired the skills and knowledge necessary to make your project a success.\n\nLorem ipsum dolor sit amet, consectetur adipisicing elit. Debitis illum fuga eveniet. Deleniti asperiores, commodi quae ipsum quas est itaque, ipsa, dolore beatae voluptates nemo blanditiis iste eius officia minus. Id nisi, consequuntur sunt impedit quidem, vitae mollitia!"
-  );
-
   useEffect(() => {
-    const fetchLocalUser = async () => {
-      const localUserStr = localStorage.getItem('user');
-      const localToken = localStorage.getItem('token');
-      
-      if (localUserStr && localToken) {
-        try {
-          const localUser = JSON.parse(localUserStr);
-          if (localUser && localUser.id) {
-            const res = await fetch(`/api-backend/users/profile`, {
-              headers: {
-                'Authorization': `Bearer ${localToken}`
-              }
-            });
-            if (res.ok) {
-              const data = await res.json();
-              setLocalUserData(data);
-              if (data.name) setEditedName(data.name);
-              if (data.title) setEditedRole(data.title);
-              if (data.headline) setEditedHeadline(data.headline);
-              if (data.about) setEditedAbout(data.about);
-              if (data.phone) setEditedPhone(data.phone);
-              if (data.professional_skills) setEditedSkills(data.professional_skills);
-              if (data.sectors) setEditedSectors(data.sectors);
-              if (data.languages) setEditedLanguages(data.languages);
-              
-              if (data.services) {
-                setEditedServices(data.services.map((service: any, index: number) => ({
-                  id: index,
-                  title: typeof service === 'string' ? service : service.title || "",
-                  icon: <Leaf className="h-4 w-4" />
-                })));
-              }
-              
-              if (data.education) {
-                setEditedEducations(data.education.map((edu: any, index: number) => ({
-                  id: index,
-                  title: edu.title || "",
-                  university: edu.name || "",
-                  years: `${edu.start_year || ""} - ${edu.end_year || ""}`
-                })));
-              }
-              
-              if (data.certifications) {
-                setEditedCertifications(data.certifications.map((cert: any, index: number) => ({
-                  id: index,
-                  title: cert.title || "",
-                  issuer: cert.name || "",
-                  years: `${cert.start_year || ""} - ${cert.end_year || ""}`
-                })));
-              }
-              
-              if (data.work_experience) {
-                setEditedExperiences(data.work_experience.map((exp: any, index: number) => ({
-                  id: index,
-                  title: exp.title || "",
-                  company: exp.name || "",
-                  startDate: exp.start_year ? String(exp.start_year) : "",
-                  endDate: exp.end_year ? String(exp.end_year) : "",
-                  description: exp.about || "",
-                  active: exp.isPresent || false
-                })));
-              }
-
-              if (data.projects && Array.isArray(data.projects)) {
-                setEditedProjects(data.projects.map((proj: any, index: number) => ({
-                  id: index,
-                  title: proj.title || "",
-                  description: proj.description || "",
-                  org: proj.name || "",
-                  location: proj.location || "",
-                  tags: "",
-                  type: "",
-                  time: "",
-                  status: "Done",
-                  icon: <Leaf className="h-6 w-6 text-white" />,
-                  iconBg: "bg-green-500"
-                })));
-              }
-            }
+    const fetchUserProfile = async () => {
+      try {
+        setIsLoadingProfile(true);
+        const res = await api.get('/users/profile');
+        const data = res.data;
+        if (data) {
+          setLocalUserData(data);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('user', JSON.stringify(data));
           }
-        } catch (e) {
-          console.error("Error fetching local user:", e);
+          if (data.name) setEditedName(data.name);
+          if (data.title) setEditedRole(data.title);
+          if (data.headline) setEditedHeadline(data.headline);
+          if (data.about) setEditedAbout(data.about);
+          if (data.skills) setEditedSkillsIntro(data.skills);
+          if (data.avatar) setEditedProfilePic(data.avatar);
+          if (data.phone) setEditedPhone(data.phone);
+          if (Array.isArray(data.professional_skills)) {
+            setEditedSkills(data.professional_skills);
+          }
+          if (Array.isArray(data.sectors)) {
+            setEditedSectors(data.sectors);
+          }
+          if (Array.isArray(data.languages)) {
+            setEditedLanguages(data.languages);
+          }
+          if (Array.isArray(data.services)) {
+            setEditedServices(
+              data.services.map((service: any, index: number) => ({
+                id: index,
+                title: typeof service === 'string' ? service : service.title || '',
+                icon: <Leaf className="h-4 w-4" />,
+              }))
+            );
+          }
+          if (Array.isArray(data.education)) {
+            setEditedEducations(
+              data.education.map((edu: any, index: number) => ({
+                id: index,
+                title: edu.title || '',
+                university: edu.name || '',
+                years:
+                  edu.start_year || edu.end_year
+                    ? `${edu.start_year || ''}${edu.start_year && edu.end_year ? ' - ' : ''}${edu.end_year || ''}`
+                    : '',
+              }))
+            );
+          }
+          if (Array.isArray(data.certifications)) {
+            setEditedCertifications(
+              data.certifications.map((cert: any, index: number) => ({
+                id: index,
+                title: cert.title || '',
+                issuer: cert.name || '',
+                years:
+                  cert.start_year || cert.end_year
+                    ? `${cert.start_year || ''}${cert.start_year && cert.end_year ? ' - ' : ''}${cert.end_year || ''}`
+                    : '',
+              }))
+            );
+          }
+          if (Array.isArray(data.work_experience)) {
+            setEditedExperiences(
+              data.work_experience.map((exp: any, index: number) => ({
+                id: index,
+                title: exp.title || '',
+                company: exp.name || '',
+                startDate: exp.start_year ? String(exp.start_year) : '',
+                endDate: exp.end_year ? String(exp.end_year) : '',
+                description: exp.about || '',
+                active: Boolean(exp.isPresent),
+              }))
+            );
+          }
+          if (Array.isArray(data.projects)) {
+            setEditedProjects(
+              data.projects.map((proj: any, index: number) => ({
+                id: index,
+                title: proj.title || '',
+                description: proj.details || proj.description || '',
+                org: proj.name || '',
+                location: proj.location || '',
+                tags: Array.isArray(proj.tags) ? proj.tags.join(', ') : (proj.tags || ''),
+                type: proj.projectType || proj.type || '',
+                time: proj.date ? new Date(proj.date).toLocaleDateString() : (proj.time || ''),
+                status: proj.status || 'Done',
+                icon: <Leaf className="h-6 w-6 text-white" />,
+                iconBg: 'bg-green-500',
+              }))
+            );
+          }
         }
+      } catch (e) {
+        console.error('Error fetching user profile from backend:', e);
+        try {
+          const cachedUser = localStorage.getItem('user');
+          if (cachedUser) {
+            const parsed = JSON.parse(cachedUser);
+            setLocalUserData(parsed);
+            if (parsed.name) setEditedName(parsed.name);
+            if (parsed.title) setEditedRole(parsed.title);
+            if (parsed.headline) setEditedHeadline(parsed.headline);
+            if (parsed.about) setEditedAbout(parsed.about);
+            if (parsed.phone) setEditedPhone(parsed.phone);
+          }
+        } catch (_) {}
+      } finally {
+        setIsLoadingProfile(false);
       }
     };
 
-    fetchLocalUser();
+    fetchUserProfile();
 
     if (user) {
       if (user.name) {
-        setEditedName(user.name);
+        setEditedName((prev) => prev || user.name || '');
       }
       syncSocialUserWithBackend(user).catch((err) => {
         console.warn('Backend social sync notice:', err?.message || err);
@@ -380,11 +278,11 @@ export default function ProfilePage() {
     let minYear = Infinity;
     let maxYear = -Infinity;
     const currentYear = new Date().getFullYear();
-    
-    editedExperiences.forEach(exp => {
+
+    editedExperiences.forEach((exp) => {
       const start = parseInt(exp.startDate);
       const end = exp.active ? currentYear : parseInt(exp.endDate);
-      
+
       if (!isNaN(start)) {
         minYear = Math.min(minYear, start);
       }
@@ -392,7 +290,7 @@ export default function ProfilePage() {
         maxYear = Math.max(maxYear, end);
       }
     });
-    
+
     if (minYear !== Infinity && maxYear !== -Infinity && maxYear >= minYear) {
       return maxYear - minYear;
     }
@@ -400,113 +298,176 @@ export default function ProfilePage() {
   }, [editedExperiences]);
 
   const profileCompletion = useMemo(() => {
-    let score = 10; // Base score
-    if (editedHeadline?.trim() && editedAbout?.trim()) score += 30;
-    else if (editedHeadline?.trim() || editedAbout?.trim()) score += 15;
-    
-    if (editedSkills && editedSkills.length > 0) score += 30;
-    
-    if (editedProjects && editedProjects.length > 0) score += 30;
-    
+    let score = 0;
+    if (editedName?.trim()) score += 10;
+    if (editedRole?.trim()) score += 10;
+    if (editedHeadline?.trim()) score += 15;
+    if (editedAbout?.trim()) score += 15;
+    if (editedPhone?.trim()) score += 10;
+    if (editedSkills && editedSkills.length > 0) score += 15;
+    if (editedExperiences && editedExperiences.length > 0) score += 15;
+    if (editedEducations && editedEducations.length > 0) score += 10;
     return Math.min(100, score);
-  }, [editedHeadline, editedAbout, editedSkills, editedProjects]);
+  }, [
+    editedName,
+    editedRole,
+    editedHeadline,
+    editedAbout,
+    editedPhone,
+    editedSkills,
+    editedExperiences,
+    editedEducations,
+  ]);
 
-  const handleRevealEmail = () => {
-    setIsSparklingEmail(true);
-    setTimeout(() => {
-      setRevealedEmail(true);
-      setIsSparklingEmail(false);
-    }, 1000);
+  const parseYearNumber = (val: any): number | undefined => {
+    if (!val) return undefined;
+    const clean = String(val).replace(/\D/g, '').slice(0, 4);
+    const num = parseInt(clean, 10);
+    if (!isNaN(num) && num >= 1900 && num <= 2100) return num;
+    return undefined;
   };
 
-  const handleRevealPhone = () => {
-    setIsSparklingPhone(true);
-    setTimeout(() => {
-      setRevealedPhone(true);
-      setIsSparklingPhone(false);
-    }, 1000);
-  };
-
-  const handleSaveProfile = async () => {
+  const handleSaveProfile = async (overrides?: any) => {
     try {
-      const localUserStr = localStorage.getItem('user');
-      const localToken = localStorage.getItem('token');
-      if (!localUserStr || !localToken) return;
+      setIsSaving(true);
 
-      const localUser = JSON.parse(localUserStr);
-      if (!localUser.id) return;
+      const nameToSave = overrides?.name !== undefined ? overrides.name : editedName;
+      const roleToSave = overrides?.title !== undefined ? overrides.title : editedRole;
+      const headlineToSave = overrides?.headline !== undefined ? overrides.headline : editedHeadline;
+      const aboutToSave = overrides?.about !== undefined ? overrides.about : editedAbout;
+      const skillsIntroToSave = overrides?.skills !== undefined ? overrides.skills : editedSkillsIntro;
+      const avatarToSave = overrides?.avatar !== undefined ? overrides.avatar : editedProfilePic;
+      const phoneToSave = overrides?.phone !== undefined ? overrides.phone : editedPhone;
+      const skillsToSave = overrides?.professional_skills !== undefined ? overrides.professional_skills : editedSkills;
+      const sectorsToSave = overrides?.sectors !== undefined ? overrides.sectors : editedSectors;
+      const languagesToSave = overrides?.languages !== undefined ? overrides.languages : editedLanguages;
+      const servicesRaw = overrides?.services !== undefined ? overrides.services : editedServices;
+      const educationsRaw = overrides?.education !== undefined ? overrides.education : editedEducations;
+      const certsRaw = overrides?.certifications !== undefined ? overrides.certifications : editedCertifications;
+      const expsRaw = overrides?.work_experience !== undefined ? overrides.work_experience : editedExperiences;
+      const projectsRaw = overrides?.projects !== undefined ? overrides.projects : editedProjects;
 
-      const payload = {
-        name: editedName,
-        title: editedRole,
-        headline: editedHeadline,
-        about: editedAbout,
-        education: editedEducations.map(edu => {
-          const years = edu.years ? edu.years.split('-') : [];
-          return {
-            title: edu.title,
-            name: edu.university,
-            start_year: parseInt(years[0]?.trim()) || null,
-            end_year: parseInt(years[1]?.trim()) || null
+      const payload: any = {
+        name: nameToSave,
+        title: roleToSave,
+        headline: headlineToSave,
+        about: aboutToSave,
+        skills: skillsIntroToSave,
+        phone: phoneToSave,
+        professional_skills: skillsToSave,
+        sectors: sectorsToSave,
+        languages: languagesToSave,
+        services: servicesRaw.map((s: any) => (typeof s === 'string' ? s : s.title)).filter(Boolean),
+        education: educationsRaw.map((edu: any) => {
+          const years = edu.years ? String(edu.years).split('-') : [];
+          const startYear = parseYearNumber(years[0]);
+          const endYear = parseYearNumber(years[1]);
+          const item: any = {
+            title: edu.title || '',
+            name: edu.university || '',
           };
+          if (startYear !== undefined) item.start_year = startYear;
+          if (endYear !== undefined) item.end_year = endYear;
+          return item;
         }),
-        certifications: editedCertifications.map(cert => {
-          const years = cert.years ? cert.years.split('-') : [];
-          return {
-            title: cert.title,
-            name: cert.issuer,
-            start_year: parseInt(years[0]?.trim()) || null,
-            end_year: parseInt(years[1]?.trim()) || null
+        certifications: certsRaw.map((cert: any) => {
+          const years = cert.years ? String(cert.years).split('-') : [];
+          const startYear = parseYearNumber(years[0]);
+          const endYear = parseYearNumber(years[1]);
+          const item: any = {
+            title: cert.title || '',
+            name: cert.issuer || '',
           };
+          if (startYear !== undefined) item.start_year = startYear;
+          if (endYear !== undefined) item.end_year = endYear;
+          return item;
         }),
-        work_experience: editedExperiences.map(exp => ({
-          title: exp.title,
-          name: exp.company,
-          start_year: parseInt(exp.startDate) || null,
-          end_year: exp.active ? null : (parseInt(exp.endDate) || null),
-          about: exp.description,
-          isPresent: exp.active
+        work_experience: expsRaw.map((exp: any) => {
+          const startYear = parseYearNumber(exp.startDate);
+          const endYear = exp.active ? undefined : parseYearNumber(exp.endDate);
+          const item: any = {
+            title: exp.title || '',
+            name: exp.company || '',
+            about: exp.description || '',
+            isPresent: Boolean(exp.active),
+          };
+          if (startYear !== undefined) item.start_year = startYear;
+          if (endYear !== undefined) item.end_year = endYear;
+          return item;
+        }),
+        projects: projectsRaw.map((proj: any) => ({
+          title: proj.title || '',
+          name: proj.org || '',
+          location: proj.location || '',
+          projectType: proj.type || '',
+          tags:
+            typeof proj.tags === 'string'
+              ? proj.tags.split(',').map((t: string) => t.trim()).filter(Boolean)
+              : (Array.isArray(proj.tags) ? proj.tags : []),
+          details: proj.description || '',
+          status: proj.status || 'Done',
         })),
-        // projects: editedProjects.map(proj => ({
-        //   title: proj.title,
-        //   description: proj.description,
-        //   name: proj.org,
-        //   location: proj.location
-        // })),
-        professional_skills: editedSkills,
-        services: editedServices.map(service => ({ title: service.title })),
-        location: localUserData?.location || "Gurugram, India",
-        sectors: editedSectors,
-        phone: editedPhone,
-        languages: editedLanguages
       };
 
-      const res = await fetch(`/api-backend/users/${localUser.id}/profile`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localToken}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (res.ok) {
-        console.log("Profile updated successfully");
-      } else {
-        console.error("Failed to update profile", await res.text());
+      if (avatarToSave) {
+        payload.avatar = avatarToSave;
       }
-    } catch (error) {
-      console.error("Error updating profile:", error);
+
+      const res = await api.patch('/users/profile', payload);
+      const updatedUser = res.data;
+      if (updatedUser) {
+        setLocalUserData(updatedUser);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+      }
+
+      toast({
+        variant: 'success',
+        title: 'Profile Saved',
+        description: 'Your changes have been saved to the backend successfully.',
+      });
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
+      const errorMsg =
+        error.response?.data?.message ||
+        (Array.isArray(error.response?.data?.message)
+          ? error.response.data.message.join(', ')
+          : error.message) ||
+        'Failed to save profile. Please try again.';
+
+      toast({
+        variant: 'destructive',
+        title: 'Save Failed',
+        description: typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg),
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
+  const handleSaveCrop = async () => {
+    try {
+      const croppedImage = await getCroppedImg(imageToCrop as string, croppedAreaPixels as any, 0);
+      setEditedProfilePic(croppedImage);
+      setImageToCrop(null);
+      await handleSaveProfile({ avatar: croppedImage });
+    } catch (e) {
+      console.error(e);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to crop image.',
+      });
+    }
+  };
   const tabs = [
     { name: "Short bio", icon: <FileText className="h-4 w-4" /> },
     { name: "Skills", icon: <Zap className="h-4 w-4" /> },
     { name: "Projects", icon: <FolderKanban className="h-4 w-4" /> },
   ];
 
-  if (isLoading) {
+  if (isLoading || isLoadingProfile) {
     return (
       <div className="bg-[#F8FAF9] min-h-screen pb-20">
         <div className="max-w-7xl mx-auto pt-6 px-4 md:px-6">
@@ -626,9 +587,9 @@ export default function ProfilePage() {
           <div className="px-8 pb-8">
             <div className="relative flex flex-col md:flex-row items-end gap-6 -mt-16 md:-mt-20">
               <div className="relative h-40 w-40 rounded-2xl overflow-hidden border-4 border-white shadow-lg bg-white flex items-center justify-center group">
-                {editedProfilePic || user?.picture ? (
+                {editedProfilePic || localUserData?.avatar || user?.picture ? (
                   <img
-                    src={editedProfilePic || user?.picture || ""}
+                    src={editedProfilePic || localUserData?.avatar || user?.picture || ""}
                     alt={user?.name || localUserData?.name || "Profile"}
                     className="object-cover w-full h-full"
                   />
@@ -673,7 +634,7 @@ export default function ProfilePage() {
                       />
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0 self-end md:self-auto mb-2 md:mb-0">
-                      <Button size="sm" onClick={() => { setIsEditing(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                      <Button size="sm" onClick={() => { setIsEditing(false); handleSaveProfile({ name: editedName, title: editedRole }); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                       <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
                     </div>
                   </div>
@@ -714,7 +675,7 @@ export default function ProfilePage() {
                       )}
                     </div>
                     <p className="text-gray-500 font-medium mt-1">
-                      {editedRole}
+                      {editedRole || <span className="text-gray-400 italic font-normal text-sm">No title specified</span>}
                     </p>
                   </>
                 )}
@@ -777,13 +738,15 @@ export default function ProfilePage() {
                           className="text-gray-600 leading-relaxed bg-white border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 w-full min-h-[80px]"
                         />
                         <div className="flex items-center gap-2">
-                          <Button size="sm" onClick={() => { setIsEditingHeadline(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                          <Button size="sm" onClick={() => { setIsEditingHeadline(false); handleSaveProfile({ headline: editedHeadline }); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                           <Button size="sm" variant="outline" onClick={() => setIsEditingHeadline(false)}>Cancel</Button>
                         </div>
                       </div>
                     ) : (
                       <p className="text-gray-600 leading-relaxed">
-                        {editedHeadline}
+                        {editedHeadline || (
+                          <span className="text-gray-400 italic">No headline added yet. Click the edit icon to add a headline.</span>
+                        )}
                       </p>
                     )}
                   </div>
@@ -810,13 +773,15 @@ export default function ProfilePage() {
                           className="text-gray-500 leading-relaxed bg-white border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 w-full min-h-[150px]"
                         />
                         <div className="flex items-center gap-2">
-                          <Button size="sm" onClick={() => { setIsEditingAbout(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                          <Button size="sm" onClick={() => { setIsEditingAbout(false); handleSaveProfile({ about: editedAbout }); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                           <Button size="sm" variant="outline" onClick={() => setIsEditingAbout(false)}>Cancel</Button>
                         </div>
                       </div>
                     ) : (
                       <p className="text-gray-500 leading-relaxed">
-                        {editedAbout}
+                        {editedAbout || (
+                          <span className="text-gray-400 italic">No about bio added yet. Click the edit icon to add your bio.</span>
+                        )}
                       </p>
                     )}
                   </div>
@@ -909,18 +874,22 @@ export default function ProfilePage() {
                         </Button>
 
                         <div className="flex items-center gap-2 pt-2">
-                          <Button size="sm" onClick={() => { setIsEditingEducation(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                          <Button size="sm" onClick={() => { setIsEditingEducation(false); handleSaveProfile({ education: editedEducations }); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                           <Button size="sm" variant="outline" onClick={() => setIsEditingEducation(false)}>Cancel</Button>
                         </div>
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {editedEducations.map((edu) => (
-                          <div key={edu.id}>
-                            <p className="font-semibold text-gray-900">{edu.title}</p>
-                            <p className="text-gray-500 text-sm">{edu.university} {edu.university && edu.years && "•"} {edu.years}</p>
-                          </div>
-                        ))}
+                        {editedEducations.length > 0 ? (
+                          editedEducations.map((edu) => (
+                            <div key={edu.id}>
+                              <p className="font-semibold text-gray-900">{edu.title}</p>
+                              <p className="text-gray-500 text-sm">{edu.university} {edu.university && edu.years && "•"} {edu.years}</p>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-gray-400 text-sm italic">No education added yet. Click the edit icon to add education.</p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1013,18 +982,22 @@ export default function ProfilePage() {
                         </Button>
 
                         <div className="flex items-center gap-2 pt-2">
-                          <Button size="sm" onClick={() => { setIsEditingCertifications(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                          <Button size="sm" onClick={() => { setIsEditingCertifications(false); handleSaveProfile({ certifications: editedCertifications }); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                           <Button size="sm" variant="outline" onClick={() => setIsEditingCertifications(false)}>Cancel</Button>
                         </div>
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {editedCertifications.map((cert) => (
-                          <div key={cert.id}>
-                            <p className="font-semibold text-gray-900">{cert.title}</p>
-                            <p className="text-gray-500 text-sm">{cert.issuer} {cert.issuer && cert.years && "•"} {cert.years}</p>
-                          </div>
-                        ))}
+                        {editedCertifications.length > 0 ? (
+                          editedCertifications.map((cert) => (
+                            <div key={cert.id}>
+                              <p className="font-semibold text-gray-900">{cert.title}</p>
+                              <p className="text-gray-500 text-sm">{cert.issuer} {cert.issuer && cert.years && "•"} {cert.years}</p>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-gray-400 text-sm italic">No certifications added yet. Click the edit icon to add certifications.</p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1159,29 +1132,33 @@ export default function ProfilePage() {
                         </Button>
 
                         <div className="flex items-center gap-2 pt-2">
-                          <Button size="sm" onClick={() => { setIsEditingExperience(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                          <Button size="sm" onClick={() => { setIsEditingExperience(false); handleSaveProfile({ work_experience: editedExperiences }); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                           <Button size="sm" variant="outline" onClick={() => setIsEditingExperience(false)}>Cancel</Button>
                         </div>
                       </div>
                     ) : (
                       <div className="relative">
-                        {editedExperiences.map((exp, idx, arr) => (
-                          <div key={exp.id} className="flex gap-4">
-                            <div className="flex flex-col items-center">
-                              <div className={`h-4 w-4 rounded-full mt-1 flex-shrink-0 ${exp.active ? "bg-green-500" : "bg-gray-300"}`} />
-                              {idx < arr.length - 1 && (
-                                <div className="w-px flex-1 bg-gray-200 my-1" />
-                              )}
+                        {editedExperiences.length > 0 ? (
+                          editedExperiences.map((exp, idx, arr) => (
+                            <div key={exp.id} className="flex gap-4">
+                              <div className="flex flex-col items-center">
+                                <div className={`h-4 w-4 rounded-full mt-1 flex-shrink-0 ${exp.active ? "bg-green-500" : "bg-gray-300"}`} />
+                                {idx < arr.length - 1 && (
+                                  <div className="w-px flex-1 bg-gray-200 my-1" />
+                                )}
+                              </div>
+                              <div className={idx < arr.length - 1 ? "pb-8" : "pb-0"}>
+                                <p className="font-semibold text-gray-900">{exp.title}</p>
+                                <p className="text-gray-500 text-sm mb-2">
+                                  {exp.company} {exp.company && (exp.startDate || exp.endDate || exp.active) && "•"} {exp.startDate} {(exp.startDate || exp.endDate || exp.active) && "-"} {exp.active ? "Present" : exp.endDate}
+                                </p>
+                                <p className="text-gray-500 text-sm leading-relaxed">{exp.description}</p>
+                              </div>
                             </div>
-                            <div className={idx < arr.length - 1 ? "pb-8" : "pb-0"}>
-                              <p className="font-semibold text-gray-900">{exp.title}</p>
-                              <p className="text-gray-500 text-sm mb-2">
-                                {exp.company} {exp.company && (exp.startDate || exp.endDate || exp.active) && "•"} {exp.startDate} {(exp.startDate || exp.endDate || exp.active) && "-"} {exp.active ? "Present" : exp.endDate}
-                              </p>
-                              <p className="text-gray-500 text-sm leading-relaxed">{exp.description}</p>
-                            </div>
-                          </div>
-                        ))}
+                          ))
+                        ) : (
+                          <p className="text-gray-400 text-sm italic">No work experience added yet. Click the edit icon to add experience.</p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1213,13 +1190,15 @@ export default function ProfilePage() {
                           className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm min-h-[150px]"
                         />
                         <div className="flex items-center gap-2 pt-2">
-                          <Button size="sm" onClick={() => { setIsEditingSkillsIntro(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                          <Button size="sm" onClick={() => { setIsEditingSkillsIntro(false); handleSaveProfile({ skills: editedSkillsIntro }); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                           <Button size="sm" variant="outline" onClick={() => setIsEditingSkillsIntro(false)}>Cancel</Button>
                         </div>
                       </div>
                     ) : (
                       <p className="text-gray-500 leading-relaxed mb-4 whitespace-pre-wrap">
-                        {editedSkillsIntro}
+                        {editedSkillsIntro || (
+                          <span className="text-gray-400 italic">No skills overview provided yet. Click the edit icon to add an overview.</span>
+                        )}
                       </p>
                     )}
                   </div>
@@ -1287,7 +1266,7 @@ export default function ProfilePage() {
                           </Button>
                         </div>
                         <div className="flex items-center gap-2 pt-2">
-                          <Button size="sm" onClick={() => { setIsEditingSkills(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                          <Button size="sm" onClick={() => { setIsEditingSkills(false); handleSaveProfile({ professional_skills: editedSkills }); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                           <Button size="sm" variant="outline" onClick={() => {
                             setIsEditingSkills(false);
                             setNewSkillInput("");
@@ -1296,14 +1275,18 @@ export default function ProfilePage() {
                       </div>
                     ) : (
                       <div className="flex flex-wrap gap-2">
-                        {editedSkills.map((skill, idx) => (
-                          <span
-                            key={idx}
-                            className="px-3 py-1.5 rounded-md bg-green-50 text-green-700 text-sm font-medium border border-green-100"
-                          >
-                            {skill}
-                          </span>
-                        ))}
+                        {editedSkills.length > 0 ? (
+                          editedSkills.map((skill, idx) => (
+                            <span
+                              key={idx}
+                              className="px-3 py-1.5 rounded-md bg-green-50 text-green-700 text-sm font-medium border border-green-100"
+                            >
+                              {skill}
+                            </span>
+                          ))
+                        ) : (
+                          <p className="text-gray-400 text-sm italic">No professional skills added yet. Click the edit icon to add skills.</p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1377,7 +1360,7 @@ export default function ProfilePage() {
                           </Button>
                         </div>
                         <div className="flex items-center gap-2 pt-2">
-                          <Button size="sm" onClick={() => { setIsEditingServices(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                          <Button size="sm" onClick={() => { setIsEditingServices(false); handleSaveProfile({ services: editedServices }); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                           <Button size="sm" variant="outline" onClick={() => {
                             setIsEditingServices(false);
                             setNewServiceInput("");
@@ -1386,19 +1369,23 @@ export default function ProfilePage() {
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {editedServices.map((service) => (
-                          <div
-                            key={service.id}
-                            className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-white hover:border-green-200 hover:bg-green-50/30 transition-all group"
-                          >
-                            <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center text-green-600 group-hover:bg-green-100 transition-colors">
-                              {service.icon}
+                        {editedServices.length > 0 ? (
+                          editedServices.map((service) => (
+                            <div
+                              key={service.id}
+                              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-white hover:border-green-200 hover:bg-green-50/30 transition-all group"
+                            >
+                              <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center text-green-600 group-hover:bg-green-100 transition-colors">
+                                {service.icon || <Leaf className="h-4 w-4" />}
+                              </div>
+                              <span className="text-gray-700 text-sm font-medium">
+                                {service.title}
+                              </span>
                             </div>
-                            <span className="text-gray-700 text-sm font-medium">
-                              {service.title}
-                            </span>
-                          </div>
-                        ))}
+                          ))
+                        ) : (
+                          <p className="text-gray-400 text-sm italic col-span-2">No services added yet. Click the edit icon to add services.</p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1412,7 +1399,7 @@ export default function ProfilePage() {
                     <h3 className="text-xl font-bold text-[#191919]">Projects</h3>
                     {isEditingProjects ? (
                       <div className="flex gap-2">
-                        <Button size="sm" onClick={() => { setIsEditingProjects(false); handleSaveProfile(); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                        <Button size="sm" onClick={() => { setIsEditingProjects(false); handleSaveProfile({ projects: editedProjects }); }} className="bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                         <Button size="sm" variant="outline" onClick={() => setIsEditingProjects(false)}>Cancel</Button>
                       </div>
                     ) : (
@@ -1430,6 +1417,37 @@ export default function ProfilePage() {
                     )}
                   </div>
                   
+                  {editedProjects.length === 0 && !isEditingProjects && (
+                    <div className="text-center py-12 border border-dashed border-gray-200 rounded-2xl">
+                      <p className="text-gray-400 text-sm italic mb-3">No projects added yet.</p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setIsEditingProjects(true);
+                          setEditedProjects([
+                            {
+                              id: Date.now(),
+                              icon: <Leaf className="h-6 w-6 text-white" />,
+                              iconBg: "bg-green-500",
+                              org: "",
+                              location: "",
+                              tags: "",
+                              title: "",
+                              type: "",
+                              time: "",
+                              description: "",
+                              status: "Done",
+                            }
+                          ]);
+                        }}
+                        className="text-green-600 border-green-200 hover:bg-green-50"
+                      >
+                        + Add your first project
+                      </Button>
+                    </div>
+                  )}
+
                   {editedProjects.map((project, idx) => (
                     <div key={project.id} className="border border-gray-100 rounded-2xl p-6 hover:shadow-md transition-shadow relative">
                       {isEditingProjects ? (
@@ -1501,7 +1519,7 @@ export default function ProfilePage() {
                               </div>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
-                              {project.tags.split(",").map((tag) => tag.trim()).filter(Boolean).map((tag) => (
+                              {(typeof project.tags === "string" ? project.tags.split(",") : (Array.isArray(project.tags) ? project.tags : [])).map((tag: any) => String(tag).trim()).filter(Boolean).map((tag: string) => (
                                 <span key={tag} className="px-3 py-1 text-xs border border-gray-200 rounded-md text-gray-500 font-medium">{tag}</span>
                               ))}
                               <div className="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center ml-1">
@@ -1638,26 +1656,30 @@ export default function ProfilePage() {
                         </Button>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Button size="sm" onClick={() => { setIsEditingSectors(false); handleSaveProfile(); }} className="h-auto py-1 px-2 text-xs bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                        <Button size="sm" onClick={() => { setIsEditingSectors(false); handleSaveProfile({ sectors: editedSectors }); }} className="h-auto py-1 px-2 text-xs bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                         <Button size="sm" variant="outline" onClick={() => { setIsEditingSectors(false); setNewSectorInput(""); }} className="h-auto py-1 px-2 text-xs">Cancel</Button>
                       </div>
                     </div>
                   ) : (
                     <div className="flex flex-wrap gap-2 mt-1">
-                      {editedSectors.map((sector, idx) => {
-                        const colors = [
-                          "bg-blue-50 text-blue-600",
-                          "bg-green-50 text-green-600",
-                          "bg-purple-50 text-purple-600",
-                          "bg-orange-50 text-orange-600"
-                        ];
-                        const colorClass = colors[idx % colors.length];
-                        return (
-                          <Badge key={idx} variant="secondary" className={`${colorClass} border-none font-medium px-3`}>
-                            {sector}
-                          </Badge>
-                        );
-                      })}
+                      {editedSectors.length > 0 ? (
+                        editedSectors.map((sector, idx) => {
+                          const colors = [
+                            "bg-blue-50 text-blue-600",
+                            "bg-green-50 text-green-600",
+                            "bg-purple-50 text-purple-600",
+                            "bg-orange-50 text-orange-600"
+                          ];
+                          const colorClass = colors[idx % colors.length];
+                          return (
+                            <Badge key={idx} variant="secondary" className={`${colorClass} border-none font-medium px-3`}>
+                              {sector}
+                            </Badge>
+                          );
+                        })
+                      ) : (
+                        <span className="text-gray-400 text-xs italic">None specified</span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1719,12 +1741,12 @@ export default function ProfilePage() {
                         </Button>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Button size="sm" onClick={() => { setIsEditingLanguage(false); handleSaveProfile(); }} className="h-auto py-1 px-2 text-xs bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
+                        <Button size="sm" onClick={() => { setIsEditingLanguage(false); handleSaveProfile({ languages: editedLanguages }); }} className="h-auto py-1 px-2 text-xs bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                         <Button size="sm" variant="outline" onClick={() => { setIsEditingLanguage(false); setNewLanguageInput(""); }} className="h-auto py-1 px-2 text-xs">Cancel</Button>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-gray-900 font-bold">{editedLanguages.join(", ")}</p>
+                    <p className="text-gray-900 font-bold">{editedLanguages.length > 0 ? editedLanguages.join(", ") : <span className="text-gray-400 font-normal text-xs italic">None specified</span>}</p>
                   )}
                 </div>
               </div>
@@ -1735,7 +1757,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Education Level</p>
-                  <p className="text-gray-900 font-bold">{editedEducations[0]?.title || "N/A"}</p>
+                  <p className="text-gray-900 font-bold">{editedEducations[0]?.title || "Not specified"}</p>
                 </div>
               </div>
 
@@ -1745,7 +1767,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex-1">
                   <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Email Address</p>
-                  <p className="text-gray-900 font-bold">{user?.email || localUserData?.email || "N/A"}</p>
+                  <p className="text-gray-900 font-bold">{localUserData?.email || user?.email || "Not available"}</p>
                 </div>
               </div>
 
@@ -1799,14 +1821,14 @@ export default function ProfilePage() {
                           } else {
                             setPhoneError("");
                             setIsEditingPhone(false);
-                            handleSaveProfile();
+                            handleSaveProfile({ phone: editedPhone });
                           }
                         }} className="h-auto py-1 px-2 text-xs bg-[#00B660] hover:bg-[#00a355] text-white">Save</Button>
                         <Button size="sm" variant="outline" onClick={() => { setIsEditingPhone(false); setPhoneError(""); }} className="h-auto py-1 px-2 text-xs">Cancel</Button>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-gray-900 font-bold">{editedPhone}</p>
+                    <p className="text-gray-900 font-bold">{editedPhone || <span className="text-gray-400 font-normal text-xs italic">Not provided</span>}</p>
                   )}
                 </div>
               </div>

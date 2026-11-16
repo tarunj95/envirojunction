@@ -16,6 +16,13 @@ interface ProfessionalCardProps {
 export function ProfessionalCard({ professional, isHighlighted = false }: ProfessionalCardProps) {
   const [imgError, setImgError] = useState(false);
 
+  // Safely extract skills list whether it's an array, comma-separated string, or undefined
+  const skillsList: string[] = Array.isArray(professional.skills)
+    ? professional.skills
+    : typeof professional.skills === "string" && (professional.skills as string).trim()
+    ? (professional.skills as string).split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
+
   return (
     <Card 
       className={`bg-white transition-all duration-300 hover:shadow-xl flex flex-col justify-between p-5 h-full border-2 ${
@@ -55,22 +62,24 @@ export function ProfessionalCard({ professional, isHighlighted = false }: Profes
           </div>
 
           {/* Bio / Description */}
-          <p className="text-sm text-gray-500 leading-relaxed mb-4">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer porttitor massa tortor, vitae sodales enim maximus eget.
+          <p className="text-sm text-gray-500 leading-relaxed mb-4 line-clamp-3">
+            {professional.bio || professional.headline || "Experienced environmental professional dedicated to sustainability and circular solutions."}
           </p>
 
           {/* Badges / Skills */}
-          <div className="flex flex-wrap gap-1.5 mb-5">
-            {professional.skills.map((skill) => (
-              <Badge 
-                key={skill} 
-                variant="outline"
-                className="text-xs px-2.5 py-0.5 rounded-full font-medium"
-              >
-                {skill}
-              </Badge>
-            ))}
-          </div>
+          {skillsList.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-5">
+              {skillsList.map((skill, idx) => (
+                <Badge 
+                  key={`${skill}-${idx}`} 
+                  variant="outline"
+                  className="text-xs px-2.5 py-0.5 rounded-full font-medium"
+                >
+                  {skill}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>

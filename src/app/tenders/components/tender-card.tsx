@@ -35,7 +35,7 @@ export function TenderCard({ tender, viewMode = "list" }: TenderCardProps) {
           
           {/* Left/Top: Organization Logo Avatar */}
           <div className="flex-shrink-0 flex items-center justify-center h-14 w-14 border border-emerald-100 rounded-xl bg-emerald-50 text-[#315D40] font-bold text-xl uppercase select-none">
-            {tender.organization.charAt(0)}
+            {(tender.organization || "T").charAt(0).toUpperCase()}
           </div>
 
           {/* Middle/Content Details */}
@@ -49,12 +49,12 @@ export function TenderCard({ tender, viewMode = "list" }: TenderCardProps) {
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-gray-500">
               <div className="flex items-center gap-1">
                 <Building className="h-3.5 w-3.5 text-gray-400" />
-                <span className="truncate max-w-[240px]">{tender.organization}</span>
+                <span className="truncate max-w-[240px]">{tender.organization || "Unknown Organization"}</span>
               </div>
             </div>
 
             <p className={cn("text-xs text-gray-500 leading-relaxed mt-2.5", isList ? "line-clamp-2" : "line-clamp-4")}>
-              {tender.details}
+              {tender.details || "No description provided."}
             </p>
 
             {/* Badges / Meta Info */}
@@ -64,7 +64,7 @@ export function TenderCard({ tender, viewMode = "list" }: TenderCardProps) {
                 className="bg-emerald-50 text-[#315D40] hover:bg-emerald-100 border border-emerald-100/50 rounded-full px-3 py-0.5 text-xs font-semibold flex items-center gap-1"
               >
                 <Tag className="h-3 w-3" />
-                {tender.value}
+                {tender.value || "Not Disclosed"}
               </Badge>
               
               <Badge 
@@ -72,7 +72,7 @@ export function TenderCard({ tender, viewMode = "list" }: TenderCardProps) {
                 className="rounded-full px-3 py-0.5 text-xs text-gray-500 border-gray-200 flex items-center gap-1 font-normal"
               >
                 <Calendar className="h-3 w-3 text-gray-400" />
-                Deadline: {tender.deadline}
+                Deadline: {tender.deadline || "Open"}
               </Badge>
             </div>
           </div>

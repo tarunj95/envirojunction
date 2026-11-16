@@ -4,7 +4,8 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const targetUrl = 'http://52.64.114.139:3000/users';
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.envirojunction.com';
+    const targetUrl = `${apiBase}/users`;
 
     const response = await fetch(targetUrl, {
       method: 'GET',

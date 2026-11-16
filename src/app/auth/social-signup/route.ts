@@ -11,7 +11,8 @@ const CORS_HEADERS = {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const targetUrl = 'http://52.64.114.139:3000/api/auth/social-signup';
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.envirojunction.com';
+    const targetUrl = `${apiBase}/auth/social-signup`;
 
     let response = await fetch(targetUrl, {
       method: 'POST',
@@ -22,9 +23,9 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    // If /api/auth/social-signup returns 404, attempt fallback to /auth/social-signup
+    // If /auth/social-signup returns 404, attempt fallback to /api/auth/social-signup
     if (response.status === 404) {
-      const fallbackUrl = 'http://52.64.114.139:3000/auth/social-signup';
+      const fallbackUrl = `${apiBase}/api/auth/social-signup`;
       const fallbackRes = await fetch(fallbackUrl, {
         method: 'POST',
         headers: {

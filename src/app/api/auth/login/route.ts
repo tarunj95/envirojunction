@@ -3,9 +3,18 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
+  const origin = request.headers.get('origin') || '*';
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Accept',
+  };
+
   try {
     const body = await request.json();
-    const targetUrl = 'http://52.64.114.139:3000/auth/login';
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.envirojunction.com';
+    const targetUrl = `${apiBase}/auth/login`;
 
     const response = await fetch(targetUrl, {
       method: 'POST',
@@ -20,11 +29,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(data, {
       status: response.status,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
+      headers: corsHeaders,
     });
   } catch (error: any) {
     console.error('Proxy Error [POST /api/auth/login]:', error);
@@ -32,25 +37,23 @@ export async function POST(request: NextRequest) {
       { error: error?.message || 'Failed to communicate with authentication server' },
       {
         status: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        },
+        headers: corsHeaders,
       }
     );
   }
 }
 
-export async function OPTIONS() {
+export async function OPTIONS(request: NextRequest) {
+  const origin = request.headers.get('origin') || '*';
   return NextResponse.json(
     {},
     {
       status: 200,
       headers: {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Credentials': 'true',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Accept',
       },
     }
   );

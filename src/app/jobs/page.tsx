@@ -21,6 +21,7 @@ import CheckboxMUI from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Box from "@mui/material/Box";
+import api from "@/utils/api";
 
 export default function JobsPage() {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -114,8 +115,10 @@ export default function JobsPage() {
     const fetchJobs = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/api-backend/jobs?page=${currentPage}&limit=${pageSize}`);
-        const result = await response.json();
+        const response = await api.get('/jobs', {
+          params: { page: currentPage, limit: pageSize },
+        });
+        const result = response.data;
         
         if (result.data) {
           const mappedJobs: Job[] = result.data.map((job: any) => ({

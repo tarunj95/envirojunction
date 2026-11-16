@@ -5,9 +5,16 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const page = searchParams.get('page') || '1';
-  const limit = searchParams.get('limit') || '5';
+  const limit = searchParams.get('limit') || '12';
+  const category = searchParams.get('category');
+  const search = searchParams.get('search');
 
-  const targetUrl = `http://52.64.114.139:3000/news?page=${page}&limit=${limit}`;
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.envirojunction.com';
+  const targetParams = new URLSearchParams({ page, limit });
+  if (category) targetParams.append('category', category);
+  if (search) targetParams.append('search', search);
+
+  const targetUrl = `${apiBase}/news?${targetParams.toString()}`;
 
   try {
     const response = await fetch(targetUrl, {
