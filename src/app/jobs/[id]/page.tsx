@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Job } from "@/lib/types";
 import api from "@/utils/api";
+import { getJobEnvironmentalTags } from "@/utils/environmentalTags";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -53,31 +54,88 @@ export default function JobDetailPage({ params }: PageProps) {
   const [allRelated, setAllRelated] = useState<Job[]>([]);
   const [relatedIndex, setRelatedIndex] = useState(0);
 
+  // Requirement: Always open detailed job page from top
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+  }, [id]);
+
   useEffect(() => {
     const fetchJob = async () => {
+      setLoading(true);
       try {
+        // 1. Try fetching specific job directly by ID
+        let foundJob: Job | null = null;
+        try {
+          const directRes = await api.get(`/jobs/${id}`);
+          if (directRes.data && directRes.data._id) {
+            const raw = directRes.data;
+            const tags = getJobEnvironmentalTags({
+              title: raw.title,
+              description: raw.description,
+              organisation: raw.organisation,
+              requirements: raw.requirements,
+              responsibilities: raw.responsibilities,
+              job_type: raw.job_type,
+            });
+            foundJob = {
+              id: raw._id,
+              title: raw.title || "Untitled Job",
+              company: raw.organisation || "Unknown Organization",
+              location: raw.location || "Location not specified",
+              type: raw.job_type || "Full-time",
+              postedDate: raw.date_posted || "",
+              description: raw.description || "",
+              logoUrl: "",
+              logoHint: raw.organisation ? raw.organisation.charAt(0) : "J",
+              tags,
+              responsibilities: raw.responsibilities || "",
+              requirements: raw.requirements || "",
+              sourceUrl: raw.source_url || raw.url || "",
+            };
+            setJob(foundJob);
+          }
+        } catch (directErr) {
+          console.warn("Direct job fetch failed, checking list:", directErr);
+        }
+
+        // 2. Fetch list for related jobs and fallback
         const response = await api.get('/jobs', {
-          params: { page: 1, limit: 50 },
+          params: { page: 1, limit: 20 },
         });
         const result = response.data;
         if (result.data) {
-          const mappedJobs = result.data.map((job: any) => ({
-            id: job._id,
-            title: job.title || "Untitled Job",
-            company: job.organisation || "Unknown Company",
-            location: job.location || "Location not specified",
-            type: job.job_type || "Full-time",
-            postedDate: job.date_posted || "",
-            description: job.description || "",
-            logoUrl: "",
-            logoHint: job.organisation ? job.organisation.charAt(0) : "J",
-            tags: [],
-            responsibilities: job.responsibilities || "",
-            requirements: job.requirements || "",
-            sourceUrl: job.source_url || "",
-          }));
-          const foundJob = mappedJobs.find((j: Job) => j.id === id);
-          setJob(foundJob || null);
+          const mappedJobs = result.data.map((j: any) => {
+            const tags = getJobEnvironmentalTags({
+              title: j.title,
+              description: j.description,
+              organisation: j.organisation,
+              requirements: j.requirements,
+              responsibilities: j.responsibilities,
+              job_type: j.job_type,
+            });
+            return {
+              id: j._id,
+              title: j.title || "Untitled Job",
+              company: j.organisation || "Unknown Organization",
+              location: j.location || "Location not specified",
+              type: j.job_type || "Full-time",
+              postedDate: j.date_posted || "",
+              description: j.description || "",
+              logoUrl: "",
+              logoHint: j.organisation ? j.organisation.charAt(0) : "J",
+              tags,
+              responsibilities: j.responsibilities || "",
+              requirements: j.requirements || "",
+              sourceUrl: j.source_url || j.url || "",
+            };
+          });
+
+          if (!foundJob) {
+            const fallbackFound = mappedJobs.find((j: Job) => j.id === id);
+            if (fallbackFound) setJob(fallbackFound);
+          }
           setAllRelated(mappedJobs.filter((j: Job) => j.id !== id));
         }
       } catch (error) {
@@ -253,6 +311,21 @@ export default function JobDetailPage({ params }: PageProps) {
                 <span>{email}</span>
               </a>
             </div>
+
+            {/* Relevant Environmental Tags */}
+            {job.tags && job.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {job.tags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="outline"
+                    className="rounded-full px-2.5 py-0.5 text-xs font-medium border-emerald-200 text-emerald-800 bg-emerald-50"
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

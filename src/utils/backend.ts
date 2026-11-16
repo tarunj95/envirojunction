@@ -23,3 +23,4 @@ export function getBackendApiBaseUrl(): string {
 
   return envUrl.replace(/\/+$/, '');
 }
+

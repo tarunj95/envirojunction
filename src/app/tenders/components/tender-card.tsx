@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Tag, Building, Loader2, Sparkles, CheckCircle2, XCircle, AlertTriangle, Bookmark } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { getTenderSectorTag } from "@/utils/environmentalTags";
 
 interface TenderCardProps {
   tender: Tender;
@@ -19,6 +20,11 @@ interface TenderCardProps {
 
 export function TenderCard({ tender, viewMode = "list" }: TenderCardProps) {
   const [isSaved, setIsSaved] = useState(false);
+  const sectorTag = getTenderSectorTag({
+    title: tender.title,
+    details: tender.details,
+    organization: tender.organization,
+  });
 
   const isList = viewMode === "list";
 
@@ -60,16 +66,23 @@ export function TenderCard({ tender, viewMode = "list" }: TenderCardProps) {
             {/* Badges / Meta Info */}
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge 
-                variant="secondary"
-                className="bg-emerald-50 text-[#315D40] hover:bg-emerald-100 border border-emerald-100/50 rounded-full px-3 py-0.5 text-xs font-semibold flex items-center gap-1"
+                variant="outline"
+                className="bg-emerald-50/80 text-emerald-800 border border-emerald-200 rounded-full px-2.5 py-0.5 text-xs font-medium flex items-center gap-1"
               >
-                <Tag className="h-3 w-3" />
+                <Tag className="h-3 w-3 text-emerald-600" />
+                {sectorTag}
+              </Badge>
+
+              <Badge 
+                variant="secondary"
+                className="bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200/60 rounded-full px-2.5 py-0.5 text-xs font-semibold flex items-center gap-1"
+              >
                 {tender.value || "Not Disclosed"}
               </Badge>
               
               <Badge 
                 variant="outline" 
-                className="rounded-full px-3 py-0.5 text-xs text-gray-500 border-gray-200 flex items-center gap-1 font-normal"
+                className="rounded-full px-2.5 py-0.5 text-xs text-gray-500 border-gray-200 flex items-center gap-1 font-normal bg-white"
               >
                 <Calendar className="h-3 w-3 text-gray-400" />
                 Deadline: {tender.deadline || "Open"}

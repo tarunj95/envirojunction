@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import api from "@/utils/api";
 import {
   Search,
@@ -143,13 +144,24 @@ function getPaginationRange(current: number, total: number): (number | string)[]
   return [1, "...", current - 1, current, current + 1, "...", total];
 }
 
-export default function NewsPage() {
+function NewsContent() {
+  const searchParams = useSearchParams();
+
   // Pagination & Filtering state
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(12);
   const [searchKeyword, setSearchKeyword] = useState<string>("");
   const [activeSearch, setActiveSearch] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
+  useEffect(() => {
+    const q = searchParams.get("search");
+    if (q) {
+      setSearchKeyword(q);
+      setActiveSearch(q);
+      setCurrentPage(1);
+    }
+  }, [searchParams]);
 
   // Data state
   const [articles, setArticles] = useState<NewsArticle[]>([]);
@@ -1030,5 +1042,13 @@ export default function NewsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function NewsPage() {
+  return (
+    <Suspense fallback={<div className="py-20 text-center text-gray-400">Loading environmental news...</div>}>
+      <NewsContent />
+    </Suspense>
   );
 }

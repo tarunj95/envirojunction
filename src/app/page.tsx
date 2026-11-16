@@ -17,8 +17,13 @@ import {
   Phone,
   FileText,
   BadgeCheck,
+  Search,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 const FolderIcon = () => (
   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
@@ -71,8 +76,9 @@ const HiringIllustration = () => (
   </svg>
 );
 
-export default function Home() {
+function HomeContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Profile completion gate state
   const [checkingProfile, setCheckingProfile] = useState<boolean>(true);
@@ -81,6 +87,11 @@ export default function Home() {
 
   // Home page feed & UI state
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const q = searchParams.get("search");
+    if (q) setSearchQuery(q);
+  }, [searchParams]);
   const [showHiringModal, setShowHiringModal] = useState(false);
   const [hiringFormSubmitted, setHiringFormSubmitted] = useState(false);
 
@@ -525,6 +536,26 @@ export default function Home() {
           </section>
         )}
 
+        {/* FEED SEARCH & STREAM BAR */}
+        <div className="bg-white p-3 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col sm:flex-row items-center gap-3">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search feed articles, jobs, sustainability updates..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-gray-50 border-0 rounded-xl pl-9 pr-8 h-10 text-sm focus-visible:ring-[#315D40]"
+            />
+            {searchQuery && (
+              <X 
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600 cursor-pointer"
+                onClick={() => setSearchQuery("")}
+              />
+            )}
+          </div>
+        </div>
+
         {/* BOTTOM LAYOUT GRID: LATEST ARTICLES & SIDEBAR */}
         <div className="grid gap-8 lg:grid-cols-[1.4fr_0.85fr]">
           {/* LEFT COLUMN: LATEST POSTS FEED */}
@@ -843,5 +874,13 @@ export default function Home() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400">Loading home...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }

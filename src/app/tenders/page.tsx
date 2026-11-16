@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Tender } from "@/lib/types";
 import api from "@/utils/api";
 import { TenderCard } from "./components/tender-card";
@@ -48,7 +49,9 @@ function getPaginationRange(current: number, total: number): (number | string)[]
   return [1, "...", current - 1, current, current + 1, "...", total];
 }
 
-export default function TendersPage() {
+function TendersContent() {
+  const searchParams = useSearchParams();
+
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [pageSize, setPageSize] = useState<number>(6);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -64,6 +67,14 @@ export default function TendersPage() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [orgLocationKeyword, setOrgLocationKeyword] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+
+  useEffect(() => {
+    const q = searchParams.get("search");
+    if (q) {
+      setSearchKeyword(q);
+      setCurrentPage(1);
+    }
+  }, [searchParams]);
 
   // Sidebar Checkbox states
   const [orgGovt, setOrgGovt] = useState(false);
@@ -643,5 +654,13 @@ export default function TendersPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TendersPage() {
+  return (
+    <Suspense fallback={<div className="py-20 text-center text-gray-400">Loading tenders directory...</div>}>
+      <TendersContent />
+    </Suspense>
   );
 }

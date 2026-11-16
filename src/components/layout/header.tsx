@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import React, { useState, useEffect, Suspense } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +27,46 @@ const navItems = [
   { href: "/news", label: "News", icon: Newspaper },
   { href: "/professionals", label: "Professionals", icon: Users },
 ];
+
+function HeaderSearch() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [headerSearch, setHeaderSearch] = useState("");
+
+  useEffect(() => {
+    const q = searchParams.get('search');
+    if (q) setHeaderSearch(q);
+  }, [searchParams]);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = headerSearch.trim();
+    if (!query) return;
+
+    if (['/jobs', '/tenders', '/news', '/professionals'].includes(pathname)) {
+      router.push(`${pathname}?search=${encodeURIComponent(query)}`);
+    } else {
+      router.push(`/jobs?search=${encodeURIComponent(query)}`);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSearchSubmit} className="relative flex-1">
+      <Search 
+        onClick={handleSearchSubmit}
+        className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 cursor-pointer hover:text-[#00B660] transition-colors" 
+      />
+      <Input
+        type="search"
+        placeholder="Search jobs, tenders, news, talent..."
+        value={headerSearch}
+        onChange={(e) => setHeaderSearch(e.target.value)}
+        className="w-full rounded-xl bg-gray-50 border-gray-100 pl-10 pr-4 h-11 focus:ring-[#00B660] focus:border-[#00B660] text-sm"
+      />
+    </form>
+  );
+}
 
 export function Header() {
   const pathname = usePathname();
@@ -75,14 +115,19 @@ export function Header() {
       </nav>
 
       <div className="flex items-center gap-6 ml-auto w-full max-w-md">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            type="search"
-            placeholder="Search"
-            className="w-full rounded-xl bg-gray-50 border-gray-100 pl-10 pr-4 h-11 focus:ring-[#00B660] focus:border-[#00B660] text-sm"
-          />
-        </div>
+        <Suspense fallback={
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              type="search"
+              placeholder="Search jobs, tenders, news, talent..."
+              className="w-full rounded-xl bg-gray-50 border-gray-100 pl-10 pr-4 h-11 text-sm"
+              readOnly
+            />
+          </div>
+        }>
+          <HeaderSearch />
+        </Suspense>
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
