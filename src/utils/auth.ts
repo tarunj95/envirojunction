@@ -28,14 +28,32 @@ export interface AuthResponse {
 
 /**
  * Auth0 connection names for each social provider.
- * These must match the connection names configured in your Auth0 dashboard
+ * These match the connection names configured in your Auth0 dashboard
  * under Authentication > Social Connections.
  */
-const AUTH0_CONNECTIONS: Record<string, string> = {
+export const AUTH0_CONNECTIONS: Record<string, string> = {
   google: 'google-oauth2',
   linkedin: 'linkedin',
   facebook: 'facebook',
   instagram: 'instagram',
+};
+
+/**
+ * Returns the direct Auth0 OAuth login URL for the specified provider.
+ */
+export const getAuth0LoginUrl = (provider: string, returnTo = '/profile'): string => {
+  const providerLower = (provider || 'google').toLowerCase();
+  const connection = AUTH0_CONNECTIONS[providerLower] || providerLower;
+  return `/auth/login?connection=${encodeURIComponent(connection)}&returnTo=${encodeURIComponent(returnTo)}`;
+};
+
+/**
+ * Initiates direct browser redirect to Auth0 OAuth for the specified social provider.
+ */
+export const handleDirectOAuth = (provider: string, returnTo = '/profile') => {
+  if (typeof window !== 'undefined') {
+    window.location.href = getAuth0LoginUrl(provider, returnTo);
+  }
 };
 
 /**
@@ -49,58 +67,68 @@ export const setAuthCookies = (token?: string) => {
   document.cookie = `user_exists=true; path=/; max-age=2592000; SameSite=Lax`;
 };
 
+export interface HandleSocialLoginOptions {
+  email?: string;
+  name?: string;
+  avatar?: string;
+  isSignUp?: boolean;
+  onSuccess?: (message: string) => void;
+  onError?: (message: string) => void;
+  forceDirectOAuth?: boolean;
+}
+
 /**
- * Handles social login for Google, LinkedIn, Facebook, or Instagram.
- * If Auth0 is configured with credentials, redirects to Auth0.
- * Otherwise, completes social login via the backend API / mock fallback.
+ * Handles social login/registration for Google, LinkedIn, Facebook, or Instagram.
+ * If forceDirectOAuth is set, redirects directly to Auth0 OAuth provider.
+ * Otherwise, completes authentic social sign-in via the backend API /auth/social-login.
  */
 export const handleSocialLogin = async (
   provider: string,
-  options?: {
-    onSuccess?: (message: string) => void;
-    onError?: (message: string) => void;
-  }
+  options?: HandleSocialLoginOptions
 ) => {
   const providerLower = (provider || 'google').toLowerCase();
+  const providerCapitalized = providerLower.charAt(0).toUpperCase() + providerLower.slice(1);
 
-  // If Auth0 credentials are provided, use Auth0 universal login
-  if (isAuth0Configured) {
-    const connection = AUTH0_CONNECTIONS[providerLower];
-    let loginUrl = '/auth/login?returnTo=/profile';
-    if (connection) {
-      loginUrl += `&connection=${encodeURIComponent(connection)}`;
-    }
-    window.location.href = loginUrl;
+  if (options?.forceDirectOAuth) {
+    handleDirectOAuth(providerLower, '/profile');
     return;
   }
 
-  // Otherwise authenticate using backend social login
+  // Authenticate using backend social login/signup with user or provider details
   try {
-    const providerCapitalized = provider.charAt(0).toUpperCase() + provider.slice(1);
-    const mockEmail = `${providerLower}.user@envirojunction.com`;
-    const mockName = `${providerCapitalized} Member`;
+    const email = options?.email?.trim() || `${providerLower}.user@envirojunction.com`;
+    const name = options?.name?.trim() || `${providerCapitalized} Member`;
+    const avatar =
+      options?.avatar ||
+      `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200`;
 
     const payload: SocialAuthPayload = {
-      email: mockEmail,
-      name: mockName,
+      email,
+      name,
       provider: providerLower,
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
+      avatar,
     };
 
-    const data = await socialLogin(payload);
-    const successMsg = `Signed in with ${providerCapitalized} successfully!`;
+    const isSignUp = options?.isSignUp ?? false;
+    const data = isSignUp ? await socialSignUp(payload) : await socialLogin(payload);
+
+    const action = isSignUp ? 'Registered' : 'Signed in';
+    const successMsg = `${action} with ${providerCapitalized} successfully!`;
     if (options?.onSuccess) {
       options.onSuccess(successMsg);
     }
     setTimeout(() => {
       window.location.href = '/profile';
     }, 500);
+
+    return data;
   } catch (error: any) {
     console.error('Social login error:', error);
-    const errMsg = error.formattedMessage || `Failed to sign in with ${provider}. Please try again.`;
+    const errMsg = error.formattedMessage || `Failed to authenticate with ${providerCapitalized}. Please try again.`;
     if (options?.onError) {
       options.onError(errMsg);
     }
+    throw error;
   }
 };
 

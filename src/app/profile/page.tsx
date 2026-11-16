@@ -268,9 +268,13 @@ export default function ProfilePage() {
       if (user.name) {
         setEditedName((prev) => prev || user.name || '');
       }
-      syncSocialUserWithBackend(user).catch((err) => {
-        console.warn('Backend social sync notice:', err?.message || err);
-      });
+      syncSocialUserWithBackend(user)
+        .then(() => {
+          fetchUserProfile();
+        })
+        .catch((err) => {
+          console.warn('Backend social sync notice:', err?.message || err);
+        });
     }
   }, [user]);
 

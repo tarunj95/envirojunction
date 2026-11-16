@@ -54,6 +54,9 @@ async function getAccessToken(): Promise<string | null> {
  */
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
+    // Ensure baseURL is dynamically resolved to the production backend
+    config.baseURL = getBackendApiBaseUrl();
+
     // Normalize endpoint paths so both /api/... and standard backend paths succeed
     if (config.url) {
       if (config.url.startsWith('/api/auth/')) {

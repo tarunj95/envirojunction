@@ -31,6 +31,7 @@ import api from "@/utils/api";
 import { handleSocialLogin, setAuthCookies } from "@/utils/auth";
 import { useToast } from "@/hooks/use-toast";
 import AuthLeftPanel from '../components/AuthLeftPanel';
+import { SocialAuthModal } from '@/components/auth/social-auth-modal';
 
 export default function SigninPage() {
   const router = useRouter();
@@ -40,6 +41,8 @@ export default function SigninPage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [socialModalOpen, setSocialModalOpen] = useState(false);
+  const [selectedSocialProvider, setSelectedSocialProvider] = useState('google');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -119,25 +122,9 @@ export default function SigninPage() {
     }
   }, [formik.submitCount]);
 
-  const handleSocialClick = async (provider: string) => {
-    setIsLoading(true);
-    await handleSocialLogin(provider, {
-      onSuccess: (msg) => {
-        toast({
-          variant: "success",
-          title: "Sign In Successful",
-          description: msg,
-        });
-      },
-      onError: (msg) => {
-        toast({
-          variant: "destructive",
-          title: "Social Login Failed",
-          description: msg,
-        });
-        setIsLoading(false);
-      },
-    });
+  const handleSocialClick = (provider: string) => {
+    setSelectedSocialProvider(provider);
+    setSocialModalOpen(true);
   };
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -386,6 +373,28 @@ export default function SigninPage() {
           </Stack>
         </form>
       </Paper>
+
+      <SocialAuthModal
+        open={socialModalOpen}
+        onClose={() => setSocialModalOpen(false)}
+        provider={selectedSocialProvider}
+        isSignUp={false}
+        defaultEmail={formik.values.email}
+        onSuccess={(msg) => {
+          toast({
+            variant: "success",
+            title: "Sign In Successful",
+            description: msg,
+          });
+        }}
+        onError={(msg) => {
+          toast({
+            variant: "destructive",
+            title: "Social Login Failed",
+            description: msg,
+          });
+        }}
+      />
     </Box>
   );
 }
