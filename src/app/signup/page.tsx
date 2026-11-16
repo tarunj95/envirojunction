@@ -189,10 +189,16 @@ export default function SignupPage() {
   return (
     <Box sx={{
       display: 'flex',
+      flexDirection: { xs: 'column', lg: 'row' },
       minHeight: '100vh',
       position: 'relative',
-      bgcolor: 'white',
-      overflow: 'hidden'
+      bgcolor: { xs: '#f8faf9', lg: 'white' },
+      overflowY: 'auto',
+      overflowX: 'hidden',
+      justifyContent: { xs: 'center', lg: 'initial' },
+      alignItems: { xs: 'center', lg: 'initial' },
+      py: { xs: 4, lg: 0 },
+      px: { xs: 2, sm: 3, lg: 0 }
     }}>
       <AuthLeftPanel />
 
@@ -200,29 +206,37 @@ export default function SignupPage() {
       <Box sx={{
         flex: 490,
         bgcolor: 'white',
-        height: '100%'
+        height: '100%',
+        display: { xs: 'none', lg: 'block' }
       }} />
 
       {/* Centered Form Card */}
       <Paper
         elevation={10}
         sx={{
-          position: 'absolute',
-          left: { xs: '50%', lg: '72%' },
-          top: { xs: '50%', lg: '50%' },
-          transform: 'translate(-50%, -50%)',
-          width: { xs: '90%', lg: '540px' },
-          height: { xs: 'auto', lg: 'auto' },
-          p: { xs: 4, lg: 6 },
-          borderRadius: '40px',
+          position: { xs: 'relative', lg: 'absolute' },
+          left: { xs: 'auto', lg: '72%' },
+          top: { xs: 'auto', lg: '50%' },
+          transform: { xs: 'none', lg: 'translate(-50%, -50%)' },
+          width: { xs: '100%', sm: '480px', lg: '540px' },
+          maxWidth: '100%',
+          p: { xs: 3, sm: 4, lg: 6 },
+          borderRadius: { xs: '24px', sm: '32px', lg: '40px' },
           zIndex: 2,
           boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
           border: '1px solid #f0f0f0',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          my: { xs: 'auto', lg: 0 }
         }}
       >
+        {/* Mobile Logo */}
+        <Box sx={{ display: { xs: 'flex', lg: 'none' }, justifyContent: 'center', mb: 3 }}>
+          <Link href="/">
+            <img src="/Enviro%20Logo%20Green%20option.svg" alt="EnviroJunction" style={{ height: '36px', width: 'auto' }} />
+          </Link>
+        </Box>
         <Typography
           variant="h4"
           sx={{
@@ -480,8 +494,10 @@ export default function SignupPage() {
         onClose={() => setShowSsoConfigDialog(false)}
         maxWidth="sm"
         fullWidth
-        PaperProps={{
-          sx: { borderRadius: 3, p: 1 }
+        slotProps={{
+          paper: {
+            sx: { borderRadius: 3, p: 1 }
+          }
         }}
       >
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>

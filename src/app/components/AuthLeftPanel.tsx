@@ -55,52 +55,7 @@ export default function AuthLeftPanel() {
 
   return (
     <>
-      {/* Mobile/Tablet Block Overlay */}
-      <Box
-        sx={{
-          display: { xs: 'flex', lg: 'none' },
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          bgcolor: 'white',
-          zIndex: 10000,
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: 'center',
-          p: 4,
-          background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)'
-        }}
-      >
-        <Link href="/" style={{ marginBottom: '24px' }}>
-          <img src="/Enviro%20Logo%20Green%20option.svg" alt="EnviroJunction" style={{ height: '44px', width: 'auto' }} />
-        </Link>
-        <Typography
-          variant="h5"
-          sx={{
-            fontWeight: 700,
-            color: '#1a1a1a',
-            mb: 2,
-            fontFamily: '"Be Vietnam Pro", sans-serif'
-          }}
-        >
-          View in Desktop View Only
-        </Typography>
-        <Typography
-          variant="body1"
-          sx={{
-            color: '#666',
-            maxWidth: '280px',
-            lineHeight: 1.6
-          }}
-        >
-          For the best experience, please access EnviroJunction on a desktop or laptop computer.
-        </Typography>
-      </Box>
-
-      {/* Left Section - Carousel & Background Images */}
+      {/* Left Section - Carousel & Background Images (Desktop only) */}
       <Box
         sx={{
           display: { xs: 'none', lg: 'flex' },

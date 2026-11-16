@@ -12,13 +12,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Home, Briefcase, FileText, Newspaper, Users } from "lucide-react";
+import { Search, Home, Briefcase, FileText, Newspaper, Users, Menu } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { cn } from "@/lib/utils";
 import { handleLogout } from "@/utils/auth";
 import { useUser } from "@auth0/nextjs-auth0/client";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },
@@ -74,6 +81,7 @@ export function Header() {
   const userAvatar = PlaceHolderImages.find(img => img.id === 'user-avatar');
 
   const [localUser, setLocalUser] = useState<any>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const localUserStr = localStorage.getItem('user');
@@ -87,10 +95,78 @@ export function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 flex h-20 items-center gap-4 bg-white px-6 md:px-12 shadow-sm border-none">
-      <Link href="/" className="flex items-center gap-2 mr-8">
-        <img src="/Enviro Logo Green option ( Horizontal ) (1).svg" alt="EnviroJunction Logo" className="h-[1.5rem] w-auto" />
-      </Link>
+    <header className="sticky top-0 z-50 flex h-20 items-center justify-between gap-3 bg-white px-4 sm:px-6 md:px-12 shadow-sm border-none">
+      <div className="flex items-center gap-3">
+        {/* Mobile Navigation Drawer */}
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="lg:hidden text-gray-700 hover:text-[#00B660] -ml-1">
+              <Menu className="h-6 w-6" />
+              <span className="sr-only">Toggle navigation menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[280px] sm:w-[320px] p-6 flex flex-col justify-between">
+            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+            <SheetDescription className="sr-only">Mobile navigation links and account settings</SheetDescription>
+            <div className="flex flex-col gap-6">
+              <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2">
+                <img src="/Enviro Logo Green option ( Horizontal ) (1).svg" alt="EnviroJunction Logo" className="h-[1.5rem] w-auto" />
+              </Link>
+              <nav className="flex flex-col gap-1.5">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      href={item.href}
+                      key={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-sm font-medium",
+                        isActive
+                          ? "bg-[#E8F5E9] text-[#00B660] font-semibold"
+                          : "text-[#666666] hover:bg-gray-50 hover:text-[#00B660]"
+                      )}
+                    >
+                      <Icon className={cn("h-5 w-5", isActive ? "text-[#00B660]" : "text-gray-400")} />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+
+            <div className="pt-6 border-t border-gray-100 flex flex-col gap-2">
+              <Link
+                href="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#00B660]"
+              >
+                <Avatar className="h-8 w-8">
+                  {user?.picture && <AvatarImage src={user.picture} alt={user.name || "User avatar"} />}
+                  <AvatarFallback className="bg-[#E8F5E9] text-[#00B660] font-bold text-sm">
+                    {(user?.name || localUser?.name || "U")[0]?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="truncate">{user?.name || localUser?.name || "Profile"}</span>
+              </Link>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleLogout();
+                }}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 text-left w-full cursor-pointer"
+              >
+                Log out
+              </button>
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        <Link href="/" className="flex items-center gap-2 mr-2 sm:mr-4 md:mr-8">
+          <img src="/Enviro Logo Green option ( Horizontal ) (1).svg" alt="EnviroJunction Logo" className="h-[1.5rem] w-auto max-w-[150px] sm:max-w-none" />
+        </Link>
+      </div>
       
       <nav className="hidden lg:flex items-center gap-8 text-sm font-medium">
         {navItems.map((item) => {
@@ -114,9 +190,9 @@ export function Header() {
         })}
       </nav>
 
-      <div className="flex items-center gap-6 ml-auto w-full max-w-md">
+      <div className="flex items-center gap-3 sm:gap-6 ml-auto justify-end w-full max-w-xs sm:max-w-sm md:max-w-md">
         <Suspense fallback={
-          <div className="relative flex-1">
+          <div className="relative flex-1 hidden sm:block">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               type="search"
@@ -126,7 +202,9 @@ export function Header() {
             />
           </div>
         }>
-          <HeaderSearch />
+          <div className="flex-1 hidden sm:block">
+            <HeaderSearch />
+          </div>
         </Suspense>
         
         <DropdownMenu>

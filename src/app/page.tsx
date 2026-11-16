@@ -497,12 +497,12 @@ function HomeContent() {
 
   // PROFILE COMPLETE (> 70%): SHOW FULL HOME STREAM
   return (
-    <div className="min-h-screen text-slate-900 font-sans selection:bg-emerald-100 selection:text-emerald-900 pb-20 bg-slate-50">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+    <div className="min-h-screen text-slate-900 font-sans selection:bg-emerald-100 selection:text-emerald-900 pb-20 bg-slate-50 w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 sm:space-y-10 w-full">
         {/* STORIES TRAY */}
         {storiesData.length > 0 && (
-          <section className="py-2">
-            <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-none">
+          <section className="py-1 w-full max-w-full overflow-hidden">
+            <div className="flex items-center gap-3 sm:gap-4 overflow-x-auto pb-3 scrollbar-none w-full">
               {storiesData.map((story, index) => (
                 <button
                   key={story.id}
@@ -556,10 +556,10 @@ function HomeContent() {
           </div>
         </div>
 
-        {/* BOTTOM LAYOUT GRID: LATEST ARTICLES & SIDEBAR */}
-        <div className="grid gap-8 lg:grid-cols-[1.4fr_0.85fr]">
+        {/* BOTTOM LAYOUT: LATEST ARTICLES FEED & SIDEBAR */}
+        <div className="flex flex-col lg:flex-row gap-8 items-start w-full">
           {/* LEFT COLUMN: LATEST POSTS FEED */}
-          <section className="space-y-8">
+          <section className="flex-1 min-w-0 w-full space-y-8">
             {filteredItems.length === 0 && !loading ? (
               <div className="p-12 text-center bg-white rounded-3xl border border-dashed border-gray-200">
                 <p className="text-gray-500 font-medium">No posts found matching your search term.</p>
@@ -571,7 +571,7 @@ function HomeContent() {
                 </button>
               </div>
             ) : (
-              <div className="grid gap-6 sm:grid-cols-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-5">
                 {filteredItems.map((item) => {
                   const isNews = item.feedType === "news";
                   const imageUrl = isNews
@@ -591,9 +591,9 @@ function HomeContent() {
                   const readTime = isNews ? "5 mins read" : item.location || "Remote";
 
                   return (
-                    <Link href={isNews ? "/news" : `/jobs/${item._id}`} key={item._id}>
-                      <article className="group h-full flex flex-col bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer">
-                        <div className="relative h-52 overflow-hidden bg-slate-100">
+                    <Link href={isNews ? "/news" : `/jobs/${item._id}`} key={item._id} className="block h-full">
+                      <article className="group h-full flex flex-col bg-white border border-gray-100 rounded-2xl sm:rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer">
+                        <div className="relative h-44 sm:h-48 overflow-hidden bg-slate-100">
                           <img
                             src={imageUrl}
                             alt={title}
@@ -603,35 +603,35 @@ function HomeContent() {
                                 "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=600";
                             }}
                           />
-                          <span className="absolute top-4 right-4 bg-white/95 backdrop-blur-xs text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-2xs text-[#315D40] uppercase tracking-widest">
+                          <span className="absolute top-3 right-3 bg-white/95 backdrop-blur-xs text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-2xs text-[#315D40] uppercase tracking-widest">
                             {isNews ? "NEWS" : "JOB"}
                           </span>
                         </div>
 
-                        <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                          <div className="space-y-2.5">
-                            <span className="inline-block text-xs font-bold tracking-widest text-[#315D40] uppercase bg-emerald-50 px-3 py-1 rounded-full truncate max-w-[80%]">
+                        <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
+                          <div className="space-y-2">
+                            <span className="inline-block text-[11px] font-bold tracking-wider text-[#315D40] uppercase bg-emerald-50 px-2.5 py-0.5 rounded-full truncate max-w-[85%]">
                               {category}
                             </span>
-                            <h3 className="text-base font-bold text-gray-900 leading-snug group-hover:text-[#315D40] transition-colors line-clamp-2">
+                            <h3 className="text-sm sm:text-base font-bold text-gray-900 leading-snug group-hover:text-[#315D40] transition-colors line-clamp-2">
                               {title}
                             </h3>
-                            <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">{description}</p>
+                            <p className="text-xs text-gray-500 leading-relaxed line-clamp-2 sm:line-clamp-3">{description}</p>
                           </div>
 
-                          <div className="flex items-center justify-between border-t border-gray-100 pt-4 text-[11px] font-semibold text-gray-600">
-                            <div className="flex items-center gap-2">
+                          <div className="flex items-center justify-between border-t border-gray-100 pt-3 text-[11px] font-semibold text-gray-600">
+                            <div className="flex items-center gap-1.5 min-w-0">
                               <span
-                                className={`w-5 h-5 rounded-full ${authorColor} flex items-center justify-center text-white text-[9px]`}
+                                className={`w-5 h-5 rounded-full ${authorColor} flex items-center justify-center text-white text-[9px] shrink-0`}
                               >
                                 {isNews ? "📝" : "🏢"}
                               </span>
-                              <span className="truncate max-w-[100px]">{author}</span>
+                              <span className="truncate max-w-[90px] sm:max-w-[110px]">{author}</span>
                             </div>
-                            <div className="flex items-center gap-1.5 text-gray-400 shrink-0">
+                            <div className="flex items-center gap-1 text-gray-400 shrink-0 text-[10px] sm:text-[11px]">
                               <span>{date}</span>
                               <span>•</span>
-                              <span className="truncate max-w-[80px]">{readTime}</span>
+                              <span className="truncate max-w-[70px] sm:max-w-[90px]">{readTime}</span>
                             </div>
                           </div>
                         </div>
@@ -657,7 +657,7 @@ function HomeContent() {
           </section>
 
           {/* RIGHT COLUMN: SIDEBAR */}
-          <aside className="space-y-6 sticky top-6 self-start">
+          <aside className="w-full lg:w-80 xl:w-[340px] shrink-0 space-y-6 lg:sticky lg:top-24 self-start">
             {/* Trending Now Widget */}
             <div className="p-6 bg-white border border-gray-100 rounded-[2rem] shadow-xs space-y-5">
               <h3 className="text-lg font-bold text-gray-900 border-b border-gray-50 pb-2">Trending Now</h3>
@@ -719,7 +719,7 @@ function HomeContent() {
             </div>
           </aside>
         </div>
-      </main>
+      </div>
 
       {/* STORIES LIGHTBOX */}
       {isStoryViewerOpen && storiesData.length > 0 && (
