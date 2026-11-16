@@ -15,7 +15,7 @@ import {
   MapPin, 
   Briefcase, 
   Calendar, 
-  DollarSign, 
+  IndianRupee, 
   GraduationCap, 
   Award,
   Globe,
@@ -191,7 +191,7 @@ export default function JobDetailPage({ params }: PageProps) {
     year: "numeric"
   });
 
-  const salary = job.type === "Full-Time" ? "$50k-80k/month" : "$10k-15k/month";
+  const salary = job.type === "Full-Time" ? "₹50,000 - ₹80,000 / month" : "₹15,000 - ₹25,000 / month";
   const experience = "10-15 Years";
   const education = "Graduation";
 
@@ -459,7 +459,7 @@ export default function JobDetailPage({ params }: PageProps) {
 
               <div className="flex items-start">
                 <div className="bg-emerald-50 text-[#315D40] p-2 rounded-xl mr-3 flex-shrink-0">
-                  <DollarSign className="h-5 w-5" />
+                  <IndianRupee className="h-5 w-5" />
                 </div>
                 <div>
                   <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Salary</p>
@@ -628,7 +628,7 @@ export default function JobDetailPage({ params }: PageProps) {
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-gray-700">{relJob.type}</span>
                     <span>•</span>
-                    <span>{relJob.type === "Full-Time" ? "$50k-80k/month" : "$10k-15k/month"}</span>
+                    <span>{relJob.type === "Full-Time" ? "₹50,000 - ₹80,000 / month" : "₹15,000 - ₹25,000 / month"}</span>
                   </div>
                 </div>
 

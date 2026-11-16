@@ -44,6 +44,9 @@ export function JobCard({ job, viewMode = 'list' }: { job: Job, viewMode?: 'list
             <Badge variant="secondary" className="bg-emerald-50 text-[#315D40] border border-emerald-100 rounded-full px-2.5 py-0.5 text-xs font-semibold">
               {job.type}
             </Badge>
+            <Badge variant="outline" className="bg-emerald-50/40 text-emerald-800 border-emerald-200 rounded-full px-2.5 py-0.5 text-xs font-medium">
+              {job.type === "Full-Time" ? "₹50k - ₹80k / mo" : "₹15k - ₹25k / mo"}
+            </Badge>
             {displayTags.map((tag) => (
               <Badge 
                 key={tag} 
