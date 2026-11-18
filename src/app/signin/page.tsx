@@ -323,11 +323,11 @@ export default function SigninPage() {
                 }} />}
                 label={<Typography sx={{ fontSize: '0.85rem', color: '#666' }}>Remember me</Typography>}
               />
-              <Link href="/forgot-password" style={{ textDecoration: 'none' }}>
+              {/* <Link href="/forgot-password" style={{ textDecoration: 'none' }}>
                 <Typography sx={{ fontSize: '0.85rem', color: '#1e6b52', fontWeight: 500, '&:hover': { textDecoration: 'underline' } }}>
                   Forgot Password?
                 </Typography>
-              </Link>
+              </Link> */}
             </Box>
 
             <Button
@@ -459,7 +459,7 @@ export default function SigninPage() {
               Option A: Auth0 Universal SSO (Google, LinkedIn, Facebook, Enterprise)
             </Typography>
             <Typography variant="body2" component="pre" sx={{ fontSize: '0.78rem', fontFamily: 'monospace', m: 0, color: '#0f172a', whiteSpace: 'pre-wrap' }}>
-{`AUTH0_DOMAIN=your-tenant.us.auth0.com
+              {`AUTH0_DOMAIN=your-tenant.us.auth0.com
 AUTH0_CLIENT_ID=your_client_id
 AUTH0_CLIENT_SECRET=your_client_secret
 AUTH0_SECRET=generated_32_byte_secret
@@ -475,7 +475,7 @@ APP_BASE_URL=http://localhost:9002`}
               Option B: Direct Google OAuth 2.0 (GIS)
             </Typography>
             <Typography variant="body2" component="pre" sx={{ fontSize: '0.78rem', fontFamily: 'monospace', m: 0, color: '#0f172a', whiteSpace: 'pre-wrap' }}>
-{`NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_id.apps.googleusercontent.com`}
+              {`NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_id.apps.googleusercontent.com`}
             </Typography>
             <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 1 }}>
               Authorized Origin: <code>http://localhost:9002</code>

@@ -27,7 +27,8 @@ import {
 } from '@mui/material';
 import {
   Visibility,
-  VisibilityOff
+  VisibilityOff,
+  ArrowBack as ArrowBackIcon
 } from '@mui/icons-material';
 import LockPersonOutlinedIcon from '@mui/icons-material/LockPersonOutlined';
 import CloseIcon from '@mui/icons-material/Close';
@@ -52,6 +53,9 @@ export default function SignupPage() {
       const params = new URLSearchParams(window.location.search);
       if (params.get('error') === 'sso_not_configured') {
         setShowSsoConfigDialog(true);
+      }
+      if (params.get('type') === 'organisation' || params.get('role') === 'organisation') {
+        router.replace('/signup/organisation');
       }
     }
   }, []);
@@ -237,6 +241,40 @@ export default function SignupPage() {
             <img src="/Enviro%20Logo%20Green%20option.svg" alt="EnviroJunction" style={{ height: '36px', width: 'auto' }} />
           </Link>
         </Box>
+
+        {/* Back Button to Sign In */}
+        <Box sx={{ mb: 2 }}>
+          <Link href="/signin" style={{ textDecoration: 'none', display: 'inline-block' }}>
+            <Box
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.8,
+                color: '#555',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                py: 0.6,
+                px: 1.4,
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb',
+                bgcolor: '#fafafa',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  color: '#1e6b52',
+                  borderColor: '#1e6b52',
+                  bgcolor: '#f0fdf4',
+                  boxShadow: '0 2px 6px rgba(30,107,82,0.1)',
+                  transform: 'translateX(-2px)'
+                }
+              }}
+            >
+              <ArrowBackIcon sx={{ fontSize: 18 }} />
+              <span>Back to Sign In</span>
+            </Box>
+          </Link>
+        </Box>
+
         <Typography
           variant="h4"
           sx={{
@@ -478,10 +516,18 @@ export default function SignupPage() {
               ))}
             </Box>
 
-            <Typography variant="body2" align="center" sx={{ color: '#666', mt: 2 }}>
-              Already have an Account?{' '}
-              <Link href="/signin" style={{ color: '#1e6b52', fontWeight: 600, textDecoration: 'none' }}>
-                Sign in
+            <Typography variant="body2" align="center" sx={{ color: '#4a4a4a', mt: 2, fontWeight: 600, fontSize: '0.95rem' }}>
+              Sign up as an{' '}
+              <Link
+                href="/signup/organisation"
+                style={{
+                  color: '#1e6b52',
+                  fontWeight: 700,
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '3px'
+                }}
+              >
+                Organisation
               </Link>
             </Typography>
           </Stack>

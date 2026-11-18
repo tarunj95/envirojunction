@@ -8,6 +8,17 @@ export function getBackendApiBaseUrl(): string {
     if (window.location.hostname.includes('envirojunction.com')) {
       return 'https://api.envirojunction.com';
     }
+    if (
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname.endsWith('.local')
+    ) {
+      return 'http://localhost:3000';
+    }
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    return 'http://localhost:3000';
   }
 
   const envUrl = process.env.NEXT_PUBLIC_API_BASE_URL;

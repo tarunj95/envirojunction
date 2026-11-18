@@ -4,18 +4,17 @@
 
 @layer base {
   :root {
-    /* #f6f6d7 converted to HSL: 60 62% 90% */
-    --background: 60 62% 90%;
+    --background: 0 0% 100%;
     --foreground: 140 40% 10%;
     
-    --card: 60 62% 92%;
+    --card: 0 0% 100%;
     --card-foreground: 140 40% 10%;
     
     --popover: 0 0% 100%;
     --popover-foreground: 140 40% 10%;
     
     --primary: 142 45% 25%;
-    --primary-foreground: 60 62% 98%;
+    --primary-foreground: 0 0% 100%;
     
     --secondary: 142 30% 90%;
     --secondary-foreground: 142 45% 25%;
@@ -24,7 +23,7 @@
     --muted-foreground: 142 15% 40%;
     
     --accent: 158 45% 45%;
-    --accent-foreground: 60 62% 98%;
+    --accent-foreground: 0 0% 100%;
     
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;

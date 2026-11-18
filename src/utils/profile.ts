@@ -5,6 +5,20 @@
  */
 export function calculateProfileCompletion(profile: any): number {
   if (!profile) return 0;
+
+  // Organisations and admins are exempt from individual profile completion requirements
+  const role = (profile.role || profile.userType || '').toLowerCase().trim();
+  if (
+    role === 'organisation' ||
+    role === 'organization' ||
+    role === 'admin' ||
+    Boolean(profile.organisationDetails) ||
+    Boolean(profile.companyName) ||
+    Boolean(profile.company)
+  ) {
+    return 100;
+  }
+
   let score = 0;
 
   // Name: 10%

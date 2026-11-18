@@ -30,58 +30,76 @@ function isPublicPath(pathname: string): boolean {
  *  3. Handle Auth0 session refreshes if configured.
  */
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  try {
+    const { pathname } = request.nextUrl;
 
-  // If Auth0 is not configured and a request hits an Auth0-specific route, handle gracefully
-  if (!isAuth0Configured && pathname.startsWith("/auth/")) {
-    if (pathname === "/auth/login" || pathname === "/auth/logout" || pathname === "/auth/callback") {
+    // If Auth0 is not configured and a request hits an Auth0-specific route, handle gracefully
+    if (!isAuth0Configured && pathname.startsWith("/auth/")) {
+      if (pathname === "/auth/login" || pathname === "/auth/logout" || pathname === "/auth/callback") {
+        const signinUrl = request.nextUrl.clone();
+        signinUrl.pathname = "/signin";
+        signinUrl.search = "error=sso_not_configured";
+        return NextResponse.redirect(signinUrl);
+      }
+
+      if (!pathname.startsWith("/auth/signup") && !pathname.startsWith("/auth/social-") && !pathname.startsWith("/auth/sso-callback")) {
+        return NextResponse.json(
+          {
+            error: "Auth0 is not configured.",
+            message: "Please define AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, and AUTH0_SECRET in .env.local",
+          },
+          { status: 503 }
+        );
+      }
+    }
+
+    // Run Auth0's own middleware (handles /auth/* & session cookie) when configured.
+    let auth0Response = NextResponse.next();
+    if (isAuth0Configured) {
+      try {
+        auth0Response = await auth0.middleware(request);
+      } catch (e) {
+        console.error("Auth0 middleware error:", e);
+      }
+    }
+
+    // Public routes — no session required.
+    if (isPublicPath(pathname)) {
+      return auth0Response;
+    }
+
+    // Check for an active session or custom token.
+    let session = null;
+    if (isAuth0Configured) {
+      try {
+        session = await auth0.getSession(request);
+      } catch (e) {
+        console.error("Auth0 getSession error:", e);
+      }
+    }
+
+    const tokenCookie = request.cookies.get("token")?.value;
+    const userExistsCookie = request.cookies.get("user_exists")?.value;
+    const hasCustomToken = Boolean(
+      (tokenCookie && tokenCookie.trim() !== "" && tokenCookie !== "undefined" && tokenCookie !== "null") ||
+      (userExistsCookie && userExistsCookie === "true")
+    );
+
+    const isAuthenticated = Boolean(session || hasCustomToken);
+
+    // If user is logged out (including landing on root "/" while logged out), redirect to /signin
+    if (!isAuthenticated) {
       const signinUrl = request.nextUrl.clone();
       signinUrl.pathname = "/signin";
-      signinUrl.search = "error=sso_not_configured";
+      signinUrl.search = "";
       return NextResponse.redirect(signinUrl);
     }
 
-    if (!pathname.startsWith("/auth/signup") && !pathname.startsWith("/auth/social-") && !pathname.startsWith("/auth/sso-callback")) {
-      return NextResponse.json(
-        {
-          error: "Auth0 is not configured.",
-          message: "Please define AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, and AUTH0_SECRET in .env.local",
-        },
-        { status: 503 }
-      );
-    }
-  }
-
-  // Run Auth0's own middleware (handles /auth/* & session cookie) when configured.
-  const auth0Response = isAuth0Configured
-    ? await auth0.middleware(request)
-    : NextResponse.next();
-
-  // Public routes — no session required.
-  if (isPublicPath(pathname)) {
     return auth0Response;
+  } catch (err) {
+    console.error("Middleware unhandled error:", err);
+    return NextResponse.next();
   }
-
-  // Check for an active session or custom token.
-  const session = isAuth0Configured ? await auth0.getSession(request) : null;
-  const tokenCookie = request.cookies.get("token")?.value;
-  const userExistsCookie = request.cookies.get("user_exists")?.value;
-  const hasCustomToken = Boolean(
-    (tokenCookie && tokenCookie.trim() !== "" && tokenCookie !== "undefined" && tokenCookie !== "null") ||
-    (userExistsCookie && userExistsCookie === "true")
-  );
-
-  const isAuthenticated = Boolean(session || hasCustomToken);
-
-  // If user is logged out (including landing on root "/" while logged out), redirect to /signin
-  if (!isAuthenticated) {
-    const signinUrl = request.nextUrl.clone();
-    signinUrl.pathname = "/signin";
-    signinUrl.search = "";
-    return NextResponse.redirect(signinUrl);
-  }
-
-  return auth0Response;
 }
 
 export const config = {

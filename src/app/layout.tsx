@@ -16,7 +16,7 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const isLinkedInPage = pathname.startsWith('/linkedin-style');
-  const isAuthPage = pathname === '/signup' || pathname === '/signin' || pathname === '/forgot-password';
+  const isAuthPage = pathname.startsWith('/signup') || pathname.startsWith('/signin') || pathname.startsWith('/forgot-password');
 
   useEffect(() => {
     const authRoutes = ['/signin', '/signup', '/forgot-password'];

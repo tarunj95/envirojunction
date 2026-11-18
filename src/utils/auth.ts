@@ -151,13 +151,21 @@ export const socialSignUp = async (payload: SocialAuthPayload): Promise<AuthResp
   const response = await api.post<AuthResponse>('/auth/social-signup', payload);
   const { token, user } = response.data;
 
+  const fullUser = user
+    ? {
+        ...user,
+        avatar: user.avatar || payload.avatar,
+        picture: user.picture || payload.avatar,
+      }
+    : user;
+
   if (typeof window !== 'undefined') {
     if (token) localStorage.setItem('token', token);
-    if (user) localStorage.setItem('user', JSON.stringify(user));
+    if (fullUser) localStorage.setItem('user', JSON.stringify(fullUser));
     setAuthCookies(token);
   }
 
-  return response.data;
+  return { ...response.data, user: fullUser };
 };
 
 /**
@@ -168,13 +176,21 @@ export const socialLogin = async (payload: SocialAuthPayload): Promise<AuthRespo
   const response = await api.post<AuthResponse>('/auth/social-login', payload);
   const { token, user } = response.data;
 
+  const fullUser = user
+    ? {
+        ...user,
+        avatar: user.avatar || payload.avatar,
+        picture: user.picture || payload.avatar,
+      }
+    : user;
+
   if (typeof window !== 'undefined') {
     if (token) localStorage.setItem('token', token);
-    if (user) localStorage.setItem('user', JSON.stringify(user));
+    if (fullUser) localStorage.setItem('user', JSON.stringify(fullUser));
     setAuthCookies(token);
   }
 
-  return response.data;
+  return { ...response.data, user: fullUser };
 };
 
 /**

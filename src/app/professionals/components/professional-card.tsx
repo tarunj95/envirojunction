@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 interface ProfessionalCardProps {
@@ -23,6 +24,8 @@ export function ProfessionalCard({ professional, isHighlighted = false }: Profes
     ? (professional.skills as string).split(",").map((s) => s.trim()).filter(Boolean)
     : [];
 
+  const profileHref = `/professionals/${encodeURIComponent(professional.id)}`;
+
   return (
     <Card 
       className={`bg-white transition-all duration-300 hover:shadow-xl flex flex-col justify-between p-5 h-full border-2 ${
@@ -34,8 +37,8 @@ export function ProfessionalCard({ professional, isHighlighted = false }: Profes
       <CardContent className="p-0 flex flex-col h-full justify-between">
         <div>
           {/* Header: Avatar + Name / Title */}
-          <div className="flex items-center gap-3.5 mb-4">
-            <div className="relative h-14 w-14 rounded-full overflow-hidden flex-shrink-0 bg-gray-100 border border-gray-200">
+          <Link href={profileHref} className="flex items-center gap-3.5 mb-4 group cursor-pointer">
+            <div className="relative h-14 w-14 rounded-full overflow-hidden flex-shrink-0 bg-gray-100 border border-gray-200 group-hover:border-[#1EC876] transition-colors">
               {!imgError && professional.avatarUrl ? (
                 <Image
                   src={professional.avatarUrl}
@@ -46,20 +49,20 @@ export function ProfessionalCard({ professional, isHighlighted = false }: Profes
                   onError={() => setImgError(true)}
                 />
               ) : (
-                <div className="h-full w-full flex items-center justify-center bg-gray-200 text-gray-500 font-bold uppercase text-lg">
+                <div className="h-full w-full flex items-center justify-center bg-[#E8F5E9] text-[#00B660] font-bold uppercase text-lg group-hover:bg-[#d5eed9] transition-colors">
                   {professional.name.charAt(0)}
                 </div>
               )}
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 text-base leading-snug">
+            <div className="min-w-0 flex-1">
+              <h3 className="font-semibold text-gray-900 text-base leading-snug group-hover:text-[#315D40] transition-colors truncate">
                 {professional.name}
               </h3>
-              <p className="text-sm text-gray-500 mt-0.5">
+              <p className="text-sm text-gray-500 mt-0.5 line-clamp-1">
                 {professional.headline}
               </p>
             </div>
-          </div>
+          </Link>
 
           {/* Bio / Description */}
           <p className="text-sm text-gray-500 leading-relaxed mb-4 line-clamp-3">
@@ -88,17 +91,18 @@ export function ProfessionalCard({ professional, isHighlighted = false }: Profes
 
           {/* Footer: Location + View More button */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center text-gray-500 gap-1">
-              <MapPin className="h-4 w-4 text-gray-400" />
-              <span className="text-sm font-medium">{professional.location}</span>
+            <div className="flex items-center text-gray-500 gap-1 min-w-0 pr-2">
+              <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
+              <span className="text-sm font-medium truncate">{professional.location}</span>
             </div>
             
-            <Button 
-              disabled
-              className="h-8 px-4 text-sm font-medium rounded-md shadow-none transition-colors bg-[#315D40] hover:bg-[#19C26E] text-white disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              View More
-            </Button>
+            <Link href={profileHref} className="flex-shrink-0">
+              <Button 
+                className="h-8 px-4 text-sm font-medium rounded-md shadow-none transition-colors bg-[#315D40] hover:bg-[#19C26E] text-white cursor-pointer"
+              >
+                View More
+              </Button>
+            </Link>
           </div>
         </div>
       </CardContent>

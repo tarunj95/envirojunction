@@ -45,6 +45,26 @@ export type Professional = {
   avatarUrl: string;
   avatarHint: string;
   bio?: string;
+  title?: string;
+  email?: string;
+  phone?: string;
+  sectors?: string[];
+  languages?: string[];
+  education?: Array<{ title: string; name: string; start_year?: number; end_year?: number; years?: string }>;
+  certifications?: Array<{ title: string; name: string; start_year?: number; end_year?: number; years?: string }>;
+  work_experience?: Array<{ title: string; name: string; start_year?: number; end_year?: number; about?: string; isPresent?: boolean }>;
+  services?: Array<string | { title: string }>;
+  projects?: Array<{
+    title: string;
+    name: string;
+    location?: string;
+    projectType?: string;
+    time?: string;
+    status?: string;
+    tags?: string[];
+    details?: string;
+    description?: string;
+  }>;
 };
 
 export type FreelanceProject = {

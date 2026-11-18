@@ -69,7 +69,20 @@ export default function SsoCallbackPage() {
           setAuthCookies(authResponse.token);
         }
         if (authResponse?.user) {
-          localStorage.setItem("user", JSON.stringify(authResponse.user));
+          const userWithPic = {
+            ...authResponse.user,
+            avatar: authResponse.user.avatar || profile.picture,
+            picture: authResponse.user.picture || profile.picture,
+          };
+          localStorage.setItem("user", JSON.stringify(userWithPic));
+        } else if (profile) {
+          const initialUser = {
+            name: profile.name,
+            email: profile.email,
+            avatar: profile.picture,
+            picture: profile.picture,
+          };
+          localStorage.setItem("user", JSON.stringify(initialUser));
         }
 
         setStatus("success");

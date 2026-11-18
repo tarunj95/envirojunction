@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import api from "@/utils/api";
 import { calculateProfileCompletion } from "@/utils/profile";
+import { useUserRole } from "@/hooks/use-user-role";
 import {
   Lock,
   CheckCircle2,
@@ -79,11 +80,61 @@ const HiringIllustration = () => (
 function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { isOrganisation: hookIsOrg, isAdmin: hookIsAdmin } = useUserRole();
 
   // Profile completion gate state
   const [checkingProfile, setCheckingProfile] = useState<boolean>(true);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [profileScore, setProfileScore] = useState<number>(0);
+
+  const isOrganisation = useMemo(() => {
+    if (hookIsOrg) return true;
+    const role = (userProfile?.role || userProfile?.userType || "").toLowerCase().trim();
+    if (
+      role === "organisation" ||
+      role === "organization" ||
+      Boolean(userProfile?.organisationDetails) ||
+      Boolean(userProfile?.companyName) ||
+      Boolean(userProfile?.company)
+    ) {
+      return true;
+    }
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("user");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const sRole = (parsed?.role || parsed?.userType || "").toLowerCase().trim();
+          if (
+            sRole === "organisation" ||
+            sRole === "organization" ||
+            Boolean(parsed?.organisationDetails) ||
+            Boolean(parsed?.companyName) ||
+            Boolean(parsed?.company)
+          ) {
+            return true;
+          }
+        }
+      } catch (_) {}
+    }
+    return false;
+  }, [hookIsOrg, userProfile]);
+
+  const isAdmin = useMemo(() => {
+    if (hookIsAdmin) return true;
+    const role = (userProfile?.role || "").toLowerCase().trim();
+    if (role === "admin") return true;
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("user");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if ((parsed?.role || "").toLowerCase().trim() === "admin") return true;
+        }
+      } catch (_) {}
+    }
+    return false;
+  }, [hookIsAdmin, userProfile]);
 
   // Home page feed & UI state
   const [searchQuery, setSearchQuery] = useState("");
@@ -212,10 +263,10 @@ function HomeContent() {
   }, []);
 
   useEffect(() => {
-    if (!checkingProfile && profileScore > 70) {
+    if (!checkingProfile && (isOrganisation || isAdmin || profileScore > 70)) {
       fetchPage(1);
     }
-  }, [checkingProfile, profileScore, fetchPage]);
+  }, [checkingProfile, profileScore, isOrganisation, isAdmin, fetchPage]);
 
   const loadNextPage = useCallback(() => {
     if (!loading && !loadingMore && hasNextPage) {
@@ -377,8 +428,8 @@ function HomeContent() {
     );
   }
 
-  // PROFILE INCOMPLETE GATE (Profile must be > 70% to view Home)
-  if (profileScore <= 70) {
+  // PROFILE INCOMPLETE GATE (Profile must be > 70% to view Home for individual users; organisations and admins are exempt)
+  if (!isOrganisation && !isAdmin && profileScore <= 70) {
     const hasName = Boolean(userProfile?.name?.trim());
     const hasTitle = Boolean((userProfile?.title || userProfile?.role)?.trim());
     const hasHeadline = Boolean(userProfile?.headline?.trim());
